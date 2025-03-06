@@ -3,6 +3,8 @@
 import { signIn } from 'next-auth/react'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Button from '@/components/library/Button'
+import Link from 'next/link'
 
 export default function SignIn() {
   const [email, setEmail] = useState('')
@@ -28,30 +30,38 @@ const handleSubmit = async (e) => {
     }
   }
 return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-[30px] shadow-custom-top border-0 p-8 space-y-8">
-        <h2 className="text-2xl font-normal">Sign In</h2>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-2 rounded-[30px] border border-gray-300"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-2 rounded-[30px] border border-gray-300"
-          />
-          {error && <div className="text-red-500">{error}</div>}
-          <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded-[30px]">
-            Sign In
-          </button>
-        </form>
-      </div>
+  <div className='w-full min-h-screen flex flex-col justify-center items-center relative'>
+  <h2 className='mb-8'>Sign In</h2>
+    <form className='flex flex-col items-center gap-6 mb-4'>
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="Email"
+        required
+        className='min-w-60 border-b border-black/30 p-1' 
+      />
+      <input
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        placeholder="Password"
+        required
+        className='min-w-60 border-b border-black/30 p-1 mb-4'
+      />
+      <Button 
+        text="Sign In"
+        type="button"
+        onClick={handleSubmit}
+      />
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+    </form>
+    <div><span className='opacity-[0.5]'>Don't have an account? </span> 
+      <Link href="/auth/register" className='group inline-block'>
+        Register
+        <div className='h-[1px] w-[0] bg-black group-hover:w-full transition-all duration-500'></div>
+      </Link>
     </div>
+</div>
   )
 }

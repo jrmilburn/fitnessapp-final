@@ -21,7 +21,7 @@ export default function RootLayout({ children }) {
       <SessionProvider>
 
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`antialiased w-full h-full`}
       >
         <ProtectedRoute>
           {children}

@@ -39,25 +39,6 @@ export default function ProtectedRoute({ children }) {
     return () => clearTimeout(timer);
   }, [status]);
 
-  if (status === "loading") {
-    // Display a splash screen while fetching session data
-    return (
-      <div
-        className={`fixed inset-0 flex items-center justify-center bg-white transition-opacity duration-500 ${
-          shouldFadeOut ? 'opacity-0' : 'opacity-100'
-        }`}
-        style={{ zIndex: 50, pointerEvents: shouldFadeOut ? 'none' : 'auto' }}
-      >
-        <div className="text-center">
-          <div className="animate-bounce">
-            <Image src="/logo.png" alt="App logo" width={80} height={80} className="mx-auto" />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-700 mt-4">Loading...</h1>
-        </div>
-      </div>
-    );
-  }
-
   if (status === "authenticated" || isUnprotectedPath) {
     // Render the protected content if authenticated or if the path is unprotected
     return <>{children}</>;

@@ -1,24 +1,58 @@
 @import "tailwindcss";
 
-@theme {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
+/* Define CSS variables */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --primary-bg: #ffffff;
+  --secondary-bg: #F5F5F5;
+  --primary-text: #333333;
+  --accent: #2979FF;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Global body styles */
 body {
   color: var(--foreground);
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Base typography styles for mobile-first */
+h1 { font-size: 2.25rem; line-height: 2.5rem; color: var(--primary-text); }
+h2 { font-size: 1.875rem; line-height: 2.25rem; color: var(--primary-text); }
+h3 { font-size: 1.5rem; line-height: 2rem; color: var(--primary-text); }
+h4 { font-size: 1.25rem; line-height: 1.75rem; color: var(--primary-text); }
+h5 { font-size: 1.125rem; line-height: 1.5rem; color: var(--primary-text); }
+h6 { font-size: 1rem; line-height: 1.5rem; color: var(--primary-text); }
+p   { font-size: 1rem; line-height: 1.5rem; color: var(--primary-text); }
+
+/* Small devices (min-width: 640px) */
+@media (min-width: 640px) {
+  h1 { font-size: 2.5rem; line-height: 2.75rem; }
+  h2 { font-size: 2rem; line-height: 2.5rem; }
+  h3 { font-size: 1.75rem; line-height: 2.25rem; }
+  h4 { font-size: 1.5rem; line-height: 2rem; }
+  h5 { font-size: 1.25rem; line-height: 1.75rem; }
+  h6 { font-size: 1.125rem; line-height: 1.5rem; }
+  p   { font-size: 1.125rem; line-height: 1.75rem; }
+}
+
+/* Medium devices (min-width: 768px) */
+@media (min-width: 768px) {
+  h1 { font-size: 2.75rem; line-height: 3rem; }
+  h2 { font-size: 2.25rem; line-height: 2.75rem; }
+  h3 { font-size: 2rem; line-height: 2.5rem; }
+  h4 { font-size: 1.75rem; line-height: 2.25rem; }
+  h5 { font-size: 1.5rem; line-height: 2rem; }
+  h6 { font-size: 1.25rem; line-height: 1.75rem; }
+  p   { font-size: 1.125rem; line-height: 1.75rem; }
+}
+
+/* Large devices (min-width: 1024px) */
+@media (min-width: 1024px) {
+  h1 { font-size: 3rem; line-height: 3.25rem; }
+  h2 { font-size: 2.5rem; line-height: 3rem; }
+  h3 { font-size: 2.25rem; line-height: 2.75rem; }
+  h4 { font-size: 2rem; line-height: 2.5rem; }
+  h5 { font-size: 1.75rem; line-height: 2.25rem; }
+  h6 { font-size: 1.5rem; line-height: 2rem; }
+  p   { font-size: 1.25rem; line-height: 1.75rem; }
 }
