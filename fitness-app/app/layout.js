@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "next-auth/react";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import Navbar from "@/components/navbar/Navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,6 +25,8 @@ export default function RootLayout({ children }) {
         className={`antialiased w-full h-full`}
       >
         <ProtectedRoute>
+          {/**Navbar only on protected routes */}
+          <Navbar />
           {children}
         </ProtectedRoute>
 

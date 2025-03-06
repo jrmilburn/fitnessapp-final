@@ -4,7 +4,7 @@ export default function Button({ type, text, onClick }) {
     return (
       <button
         type={type}
-        className="w-full 
+        className="w-full max-w-60
                 bg-[var(--accent)] text-[var(--primary-bg)] 
                 px-4 py-2 relative 
                 group cursor-pointer"
