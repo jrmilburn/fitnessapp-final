@@ -28,11 +28,13 @@ export default function Dashboard() {
                                     {
                                         setNo: 1,
                                         reps: 0,
-                                        weight: 0
+                                        weight: 0,
+                                        complete: false
                                     },                            {
                                         setNo: 2,
                                         reps: 0,
-                                        weight: 0
+                                        weight: 0,
+                                        complete: false
                                     }
                                 ]
                             }
@@ -53,11 +55,13 @@ export default function Dashboard() {
                                     {
                                         setNo: 1,
                                         reps: 0,
-                                        weight: 0
+                                        weight: 0,
+                                        complete: false
                                     },                            {
                                         setNo: 2,
                                         reps: 0,
-                                        weight: 0
+                                        weight: 0,
+                                        complete: false
                                     }
                                 ]
                             }
