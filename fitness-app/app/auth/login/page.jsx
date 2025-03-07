@@ -26,7 +26,7 @@ const handleSubmit = async (e) => {
     }
 
     if(result.ok) {
-        router.push('/dashboard');
+        router.push('/workout');
     }
   }
 return (

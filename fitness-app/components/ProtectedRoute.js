@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from 'next/image';
+import Navbar from "./navbar/Navbar";
 
 export default function ProtectedRoute({ children }) {
   const { status } = useSession();
@@ -39,9 +40,16 @@ export default function ProtectedRoute({ children }) {
     return () => clearTimeout(timer);
   }, [status]);
 
-  if (status === "authenticated" || isUnprotectedPath) {
+  if (status === "authenticated") {
     // Render the protected content if authenticated or if the path is unprotected
-    return <>{children}</>;
+    return (
+      <>
+        <Navbar />
+        {children}
+      </>)
+    ;
+  } else if (isUnprotectedPath) {
+    return <>{children}</>
   }
 
   // Optionally, render nothing or a fallback UI while redirecting

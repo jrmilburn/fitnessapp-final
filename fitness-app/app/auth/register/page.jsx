@@ -38,7 +38,7 @@ export default function RegisterPage() {
     if (signInResponse?.error) {
       setError(signInResponse.error);
     } else {
-      router.push('/dashboard');
+      router.push('/workout');
     }
   }
 
