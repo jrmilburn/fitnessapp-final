@@ -4,6 +4,7 @@ export default function Input({ inputVal, setInputVal }) {
         <input 
             value={inputVal}
             onChange={(e) => setInputVal(e.target.value)}
+            className="p-1 bg-[var(--primary-bg)] w-full"
         />
     )
 

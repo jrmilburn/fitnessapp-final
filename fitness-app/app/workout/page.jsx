@@ -74,11 +74,12 @@ export default function Dashboard() {
     }, [])
 
     return (
-        <div className="max-w-[calc(100% - 16rem)] ml-64 min-h-screen flex flex-col gap-4 justify-center items-center">
-            <p>{session.user.email} logged in</p>
+        <div className="max-w-[calc(100% - 16rem)] ml-64 min-h-screen flex flex-col gap-4 justify-start items-center p-4">
+            <div className="max-w-2xl mx-auto w-full">
             <Workout 
                 workout={currentWorkout}
             />
+            </div>
         </div>
     )
 
