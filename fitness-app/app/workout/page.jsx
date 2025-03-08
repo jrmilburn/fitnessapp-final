@@ -11,6 +11,7 @@ export default function Dashboard() {
     const { data: session } = useSession();
     const [program, setProgram] = useState(null);
     const [currentWorkout, setCurrentWorkout] = useState(null);
+    const [workoutCompleted, setWorkoutCompleted] = useState(false);
 
     const program1 = {
         userId: "1",
@@ -136,6 +137,12 @@ export default function Dashboard() {
         setCurrentWorkout(program1?.weeks[0]?.workouts[0]);
     }, [])
 
+    useEffect(() => {
+        setWorkoutCompleted(currentWorkout?.exercises?.every(exercise =>
+            exercise?.sets.every(set => set.complete)
+          ));
+    }, [program])  
+
     return (
         <div className="max-w-[calc(100% - 16rem)] ml-64 min-h-screen flex flex-col gap-4 justify-start items-center p-4 relative">
             <div className="max-w-2xl mx-auto w-full flex flex-col">
@@ -147,7 +154,18 @@ export default function Dashboard() {
             <Workout 
                 workout={currentWorkout}
                 setProgram={setProgram}
+                program={program}
+                workoutCompleted={workoutCompleted}
             />
+            {workoutCompleted &&
+                (
+                <Button 
+                    type="button"
+                    text="Next Workout"
+                    onClick={nextWorkout}
+                />
+            )
+            }
             </div>
         </div>
     )
