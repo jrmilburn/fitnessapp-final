@@ -6,7 +6,7 @@ export default function WorkoutHeader({ program, currentWorkout, setCurrentWorko
         <div className="w-full bg-[var(--secondary-bg)] flex justify-between p-4">
 
             <div className="flex flex-col">
-                <h6>{currentWorkout?.name}</h6>
+                <h6>{currentWorkout?.name}, workout: {currentWorkout?.workoutNo}</h6>
                 <p className="opacity-50">{program?.name}</p>
             </div>
 

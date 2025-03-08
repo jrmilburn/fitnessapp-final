@@ -11,7 +11,6 @@ export default function Dashboard() {
     const { data: session } = useSession();
     const [program, setProgram] = useState(null);
     const [currentWorkout, setCurrentWorkout] = useState(null);
-    const [workoutCompleted, setWorkoutCompleted] = useState(false);
 
     const program1 = {
         userId: "1",
@@ -79,7 +78,7 @@ export default function Dashboard() {
                     {
                         id: 3,
                         name: "1",
-                        workoutNo: 1,
+                        workoutNo: 3,
                         exercises: [
                             {
                                 name: "Bench Press",
@@ -104,7 +103,7 @@ export default function Dashboard() {
                     {
                         id: 4,
                         name: "2",
-                        workoutNo: 2,
+                        workoutNo: 4,
                         exercises: [
                             {
                                 name: "Lateral raise",
@@ -136,12 +135,7 @@ export default function Dashboard() {
         setProgram(program1);
         setCurrentWorkout(program1?.weeks[0]?.workouts[0]);
     }, [])
-
-    useEffect(() => {
-        setWorkoutCompleted(currentWorkout?.exercises?.every(exercise =>
-            exercise?.sets.every(set => set.complete)
-          ));
-    }, [program])  
+    
 
     return (
         <div className="max-w-[calc(100% - 16rem)] ml-64 min-h-screen flex flex-col gap-4 justify-start items-center p-4 relative">
@@ -155,17 +149,9 @@ export default function Dashboard() {
                 workout={currentWorkout}
                 setProgram={setProgram}
                 program={program}
-                workoutCompleted={workoutCompleted}
+                setCurrentWorkout={setCurrentWorkout}
+                currentWorkoutState={currentWorkout}
             />
-            {workoutCompleted &&
-                (
-                <Button 
-                    type="button"
-                    text="Next Workout"
-                    onClick={nextWorkout}
-                />
-            )
-            }
             </div>
         </div>
     )
