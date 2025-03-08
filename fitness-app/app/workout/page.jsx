@@ -20,6 +20,7 @@ export default function Dashboard() {
                 weekNo: 1,
                 workouts: [
                     {
+                        id: 1,
                         name: "1",
                         workoutNo: 1,
                         exercises: [
@@ -27,11 +28,13 @@ export default function Dashboard() {
                                 name: "Squat",
                                 sets: [
                                     {
+                                        id: 1,
                                         setNo: 1,
                                         reps: 0,
                                         weight: 0,
                                         complete: false
                                     },                            {
+                                        id: 2,
                                         setNo: 2,
                                         reps: 0,
                                         weight: 0,
@@ -42,6 +45,7 @@ export default function Dashboard() {
                         ]
                     },
                     {
+                        id: 2,
                         name: "2",
                         workoutNo: 2,
                         exercises: [
@@ -49,12 +53,14 @@ export default function Dashboard() {
                                 name: "Lateral raise",
                                 sets: [
                                     {
+                                        id: 3,
                                         setNo: 1,
                                         reps: 0,
                                         weight: 0,
                                         complete: false
                                     },                            
                                     {
+                                        id: 4,
                                         setNo: 2,
                                         reps: 0,
                                         weight: 0,
@@ -70,6 +76,7 @@ export default function Dashboard() {
                 weekNo: 2,
                 workouts: [
                     {
+                        id: 3,
                         name: "1",
                         workoutNo: 1,
                         exercises: [
@@ -77,11 +84,13 @@ export default function Dashboard() {
                                 name: "Bench Press",
                                 sets: [
                                     {
+                                        id: 5,
                                         setNo: 1,
                                         reps: 0,
                                         weight: 0,
                                         complete: false
                                     },                            {
+                                        id: 6,
                                         setNo: 2,
                                         reps: 0,
                                         weight: 0,
@@ -92,6 +101,7 @@ export default function Dashboard() {
                         ]
                     },
                     {
+                        id: 4,
                         name: "2",
                         workoutNo: 2,
                         exercises: [
@@ -99,12 +109,14 @@ export default function Dashboard() {
                                 name: "Lateral raise",
                                 sets: [
                                     {
+                                        id: 7,
                                         setNo: 1,
                                         reps: 0,
                                         weight: 0,
                                         complete: false
                                     },                            
                                     {
+                                        id: 8,
                                         setNo: 2,
                                         reps: 0,
                                         weight: 0,
@@ -134,6 +146,7 @@ export default function Dashboard() {
             />
             <Workout 
                 workout={currentWorkout}
+                setProgram={setProgram}
             />
             </div>
         </div>

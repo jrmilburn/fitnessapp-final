@@ -1,8 +1,6 @@
 import Exercise from "./Exercise"
 
-export default function Workout({ workout }) {
-
-    console.log(workout);
+export default function Workout({ workout, setProgram }) {
 
     return (
         <div className="w-full mx-auto flex flex-col items-center">
@@ -11,6 +9,7 @@ export default function Workout({ workout }) {
                     <Exercise 
                         key={index}
                         exercise={exercise}
+                        setProgram={setProgram}
                     />
                 )
             })}

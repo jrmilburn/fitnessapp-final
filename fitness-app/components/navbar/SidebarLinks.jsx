@@ -21,6 +21,12 @@ export default function SidebarLinks() {
             href: "/new",
             icon: "/icons/plus.svg"
 
+        },
+        {
+            id: 4,
+            title: "Analytics",
+            href: "/analytics",
+            icon: "/icons/analytics.svg"
         }
     ]
 
