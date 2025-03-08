@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react"
 import { useState, useEffect } from "react";
 
 import Workout from "@/components/workout/Workout";
+import WorkoutHeader from "@/components/workout/WorkoutHeader";
 
 export default function Dashboard() {
 
@@ -39,6 +40,29 @@ export default function Dashboard() {
                                 ]
                             }
                         ]
+                    },
+                    {
+                        name: "2",
+                        workoutNo: 2,
+                        exercises: [
+                            {
+                                name: "Lateral raise",
+                                sets: [
+                                    {
+                                        setNo: 1,
+                                        reps: 0,
+                                        weight: 0,
+                                        complete: false
+                                    },                            
+                                    {
+                                        setNo: 2,
+                                        reps: 0,
+                                        weight: 0,
+                                        complete: false
+                                    }
+                                ]
+                            }
+                        ]
                     }
                 ]
             },
@@ -50,7 +74,7 @@ export default function Dashboard() {
                         workoutNo: 1,
                         exercises: [
                             {
-                                name: "Squat",
+                                name: "Bench Press",
                                 sets: [
                                     {
                                         setNo: 1,
@@ -58,6 +82,29 @@ export default function Dashboard() {
                                         weight: 0,
                                         complete: false
                                     },                            {
+                                        setNo: 2,
+                                        reps: 0,
+                                        weight: 0,
+                                        complete: false
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        name: "2",
+                        workoutNo: 2,
+                        exercises: [
+                            {
+                                name: "Lateral raise",
+                                sets: [
+                                    {
+                                        setNo: 1,
+                                        reps: 0,
+                                        weight: 0,
+                                        complete: false
+                                    },                            
+                                    {
                                         setNo: 2,
                                         reps: 0,
                                         weight: 0,
@@ -78,8 +125,13 @@ export default function Dashboard() {
     }, [])
 
     return (
-        <div className="max-w-[calc(100% - 16rem)] ml-64 min-h-screen flex flex-col gap-4 justify-start items-center p-4">
-            <div className="max-w-2xl mx-auto w-full">
+        <div className="max-w-[calc(100% - 16rem)] ml-64 min-h-screen flex flex-col gap-4 justify-start items-center p-4 relative">
+            <div className="max-w-2xl mx-auto w-full flex flex-col">
+            <WorkoutHeader 
+                program={program}
+                currentWorkout={currentWorkout}
+                setCurrentWorkout={setCurrentWorkout}
+            />
             <Workout 
                 workout={currentWorkout}
             />
