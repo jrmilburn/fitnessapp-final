@@ -28,6 +28,10 @@ export default function ProtectedRoute({ children }) {
     // Redirect unauthenticated users to /login if they're accessing protected routes
     if (status === "unauthenticated" && !isUnprotectedPath && isClient) {
       router.push("/auth/login");
+    } else if (status === "authenticated" && isUnprotectedPath) {
+
+      router.push("/workout")
+
     }
   }, [status, router, isUnprotectedPath, isClient]);
 
