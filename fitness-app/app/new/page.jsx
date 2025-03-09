@@ -1,8 +1,9 @@
 "use client"
 
 import ProgramStructure from "@/components/new/ProgramStructure"
-import WeekLayout from "@/components/new/WeekLayout";
+import WeekLayout from "@/components/new/WeekStructure";
 import { useState, useEffect } from 'react';
+import Button from "@/components/library/Button";
 
 export default function NewPage() {
 
@@ -10,28 +11,43 @@ export default function NewPage() {
     const [programStructure, setProgramStructure] = useState({
         name: "",
         comments: "",
-        length: 0,
-        days: 0,
-        emphasis: ""
+        length: 4,
+        days: 2,
     });
     const [weekLayout, setWeekLayout] = useState(null);
 
+    const loadLayout = (e) => {
 
-    const program = {
-        userId: "1",
-        name: "Program 1",
-        weeks: [
- 
-        ]
-    }
+        e.preventDefault();
 
-    const loadLayout = () => {
+        const daysCount = programStructure.days;
 
-    }
+        let workouts = [];
+
+        for(let i = 0; i < daysCount; i++){
+
+            workouts.push({
+                name: "Day " + parseInt(i+1),
+                workoutNo: i + 1,
+                exercises: []
+            })
+
+        }
+
+        setWeekLayout(workouts);
+      };
+
+      const createProgram = () => {
+
+        console.log('program structure', programStructure);
+        console.log('weekly structure', weekLayout);
+
+      }
+      
 
     return (
         <div className="flex gap-2 max-w-[calc(100% - 16rem)] ml-64 min-h-screen p-4">
-            <div className="max-w-2xl mx-auto w-full">
+            <div className="max-w-[90%] mx-auto w-full h-full flex flex-col gap-4">
                 <ProgramStructure 
                     programStructure={programStructure}
                     setProgramStructure={setProgramStructure}
@@ -40,6 +56,12 @@ export default function NewPage() {
                 <WeekLayout 
                     weekLayout={weekLayout}
                     setWeekLayout={setWeekLayout}
+                />
+
+                <Button 
+                    type="button"
+                    text="Create"
+                    onClick={createProgram}
                 />
             </div>
         </div>
