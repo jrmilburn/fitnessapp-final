@@ -1,9 +1,9 @@
 "use client"
 
-import ProgramStructure from "@/components/new/ProgramStructure"
-import WeekLayout from "@/components/new/WeekStructure";
+import ProgramStructure from "../../components/new/ProgramStructure"
+import WeekLayout from "../../components/new/WeekStructure";
 import { useState, useEffect } from 'react';
-import Button from "@/components/library/Button";
+import Button from "../../components/library/Button";
 
 export default function NewPage() {
 
@@ -37,10 +37,20 @@ export default function NewPage() {
         setWeekLayout(workouts);
       };
 
-      const createProgram = () => {
+      const createProgram = async () => {
 
-        console.log('program structure', programStructure);
-        console.log('weekly structure', weekLayout);
+        const response = await fetch('/api/new-program', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                weekLayout,
+                programStructure
+            })
+        })
+
+        const data = await response.json();
+
+        console.log(data);
 
       }
       

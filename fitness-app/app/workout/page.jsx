@@ -3,8 +3,8 @@
 import { useSession } from "next-auth/react"
 import { useState, useEffect } from "react";
 
-import Workout from "@/components/workout/Workout";
-import WorkoutHeader from "@/components/workout/WorkoutHeader";
+import Workout from "../../components/workout/Workout";
+import WorkoutHeader from "../../components/workout/WorkoutHeader";
 
 export default function Dashboard() {
 

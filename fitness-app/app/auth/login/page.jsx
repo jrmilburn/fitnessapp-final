@@ -3,7 +3,7 @@
 import { signIn } from 'next-auth/react'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Button from '@/components/library/Button'
+import Button from '../../../components/library/Button'
 import Link from 'next/link'
 
 export default function SignIn() {

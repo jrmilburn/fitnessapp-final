@@ -52,3 +52,52 @@ model Session {
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id])
 }
+
+model Program {
+  id       String  @id @default(cuid())
+  name     String
+  comments String?
+  length   Int
+  days     Int
+
+  weeks Week[]
+}
+
+model Week {
+  id        String  @id @default(cuid())
+  weekNo    Int
+  programId String
+  program   Program @relation(fields: [programId], references: [id])
+
+  workouts Workout[]
+}
+
+model Workout {
+  id        String @id @default(cuid())
+  name      String
+  workoutNo Int
+  weekId    String
+  week      Week   @relation(fields: [weekId], references: [id])
+
+  exercises Exercise[]
+}
+
+model Exercise {
+  id        String  @id @default(cuid())
+  name      String
+  muscle    String
+  workoutId String
+  workout   Workout @relation(fields: [workoutId], references: [id])
+
+  sets Set[]
+}
+
+model Set {
+  id         String   @id @default(cuid())
+  setNo      Int
+  weight     Float?
+  reps       Int?
+  complete   Boolean  @default(false)
+  exerciseId String
+  exercise   Exercise @relation(fields: [exerciseId], references: [id])
+}
