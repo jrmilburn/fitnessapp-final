@@ -12,128 +12,13 @@ export default function Dashboard() {
     const [program, setProgram] = useState(null);
     const [currentWorkout, setCurrentWorkout] = useState(null);
 
-    const program1 = {
-        userId: "1",
-        name: "Program 1",
-        weeks: [
-            {
-                weekNo: 1,
-                workouts: [
-                    {
-                        id: 1,
-                        name: "1",
-                        workoutNo: 1,
-                        exercises: [
-                            {
-                                name: "Squat",
-                                sets: [
-                                    {
-                                        id: 1,
-                                        setNo: 1,
-                                        reps: 0,
-                                        weight: 0,
-                                        complete: false
-                                    },                            {
-                                        id: 2,
-                                        setNo: 2,
-                                        reps: 0,
-                                        weight: 0,
-                                        complete: false
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        id: 2,
-                        name: "2",
-                        workoutNo: 2,
-                        exercises: [
-                            {
-                                name: "Lateral raise",
-                                sets: [
-                                    {
-                                        id: 3,
-                                        setNo: 1,
-                                        reps: 0,
-                                        weight: 0,
-                                        complete: false
-                                    },                            
-                                    {
-                                        id: 4,
-                                        setNo: 2,
-                                        reps: 0,
-                                        weight: 0,
-                                        complete: false
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                weekNo: 2,
-                workouts: [
-                    {
-                        id: 3,
-                        name: "1",
-                        workoutNo: 3,
-                        exercises: [
-                            {
-                                name: "Bench Press",
-                                sets: [
-                                    {
-                                        id: 5,
-                                        setNo: 1,
-                                        reps: 0,
-                                        weight: 0,
-                                        complete: false
-                                    },                            {
-                                        id: 6,
-                                        setNo: 2,
-                                        reps: 0,
-                                        weight: 0,
-                                        complete: false
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        id: 4,
-                        name: "2",
-                        workoutNo: 4,
-                        exercises: [
-                            {
-                                name: "Lateral raise",
-                                sets: [
-                                    {
-                                        id: 7,
-                                        setNo: 1,
-                                        reps: 0,
-                                        weight: 0,
-                                        complete: false
-                                    },                            
-                                    {
-                                        id: 8,
-                                        setNo: 2,
-                                        reps: 0,
-                                        weight: 0,
-                                        complete: false
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            },
-        ]
-    }
-
     useEffect(() => {
-        setProgram(program1);
-        setCurrentWorkout(program1?.weeks[0]?.workouts[0]);
+        fetch('/data/program.json')
+        .then(response => response.json())
+        .then(data => {
+            setProgram(data)
+            setCurrentWorkout(data?.weeks[0]?.workouts[0]);
+        })
     }, [])
     
 

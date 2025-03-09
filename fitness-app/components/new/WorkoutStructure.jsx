@@ -26,7 +26,7 @@ import {
     );
   }
   
-  export default function WorkoutStructure({ workout, setWeekLayout, setDraggingId, draggingId }) {
+  export default function WorkoutStructure({ workout, setWeekLayout }) {
     const [showModal, setShowModal] = useState(false);
     const [activeId, setActiveId] = useState(null);
   
@@ -69,14 +69,12 @@ import {
     // When dragging starts, record the active id.
     const handleDragStart = (event) => {
       setActiveId(event.active.id);
-      setDraggingId(workout.workoutNo);
     };
   
     // Handle reordering when drag ends.
     const handleDragEnd = (event) => {
       const { active, over } = event;
       setActiveId(null);
-      setDraggingId(null);
       if (!over || active.id === over.id) return;
       
       setWeekLayout((prevWeekLayout) =>
@@ -96,8 +94,8 @@ import {
   
     return (
       <>
-        <div className={`h-full min-w-[250px] bg-[var(--secondary-bg)] overflow-x-hidden flex flex-col gap-2`}>
-
+        <div className="h-full min-w-[250px] bg-[var(--secondary-bg)] overflow-x-hidden flex flex-col gap-2">
+            
           <input
             value={workout.name}
             onChange={updateWorkoutName}
