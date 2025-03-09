@@ -1,19 +1,22 @@
-import WorkoutStructure from "./WorkoutStructure"
+import WorkoutStructure from "./WorkoutStructure";
+import { useState } from "react";
 
 export default function WeekLayout({ weekLayout, setWeekLayout }) {
 
-    return (
-        <div className="flex gap-2 bg-[var(--secondary-bg)] p-4 overflow-x-auto h-full">
-            {weekLayout?.map((workout, index) => {
-                return (
-                    <WorkoutStructure 
-                        key={index+100}
-                        workout={workout}
-                        setWeekLayout={setWeekLayout}
-                    />
-                )
-            })}
-        </div>
-    )
+    const [draggingId, setDraggingId] = useState(-1);
 
+  return (
+    <div className="w-full bg-[var(--secondary-bg)] p-4 h-full flex justify-center">
+      <div className="flex gap-2 overflow-x-auto">
+        {weekLayout?.map((workout, index) => (
+          <WorkoutStructure 
+            key={index + 100}
+            workout={workout}
+            setWeekLayout={setWeekLayout}
+            setDraggingId={setDraggingId}
+          />
+        ))}
+      </div>
+    </div>
+  );
 }
