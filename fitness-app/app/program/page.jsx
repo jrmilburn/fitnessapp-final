@@ -1,6 +1,6 @@
 "use client"
 
-import Programs from "@/components/program/Programs"
+import Programs from "../../components/program/Programs"
 import { useEffect, useState } from "react"
 
 export default function ProgramPage() {

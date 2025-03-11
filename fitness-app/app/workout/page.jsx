@@ -13,7 +13,7 @@ export default function Dashboard() {
     const [currentWorkout, setCurrentWorkout] = useState(null);
 
     useEffect(() => {
-        fetch('/data/program.json')
+        fetch('/api/program')
         .then(response => response.json())
         .then(data => {
             setProgram(data)

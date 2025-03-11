@@ -24,6 +24,9 @@ model User {
   updatedAt     DateTime  @updatedAt
   accounts      Account[]
   sessions      Session[]
+
+  currentProgramId String?
+
 }
 
 model Account {
