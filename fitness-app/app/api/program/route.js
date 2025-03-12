@@ -17,24 +17,35 @@ export async function GET() {
 
     const program = await prisma.program.findUnique({
         where: {
-            id: user.currentProgramId
+          id: user.currentProgramId,
         },
         include: {
-            weeks: {
+          weeks: {
+            orderBy: {
+              weekNo: "asc",
+            },
+            include: {
+              workouts: {
+                orderBy: {
+                  workoutNo: "asc",
+                },
                 include: {
-                    workouts: {
-                        include: {
-                            exercises: {
-                                include: {
-                                    sets: true
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    })
+                  exercises: {
+                    include: {
+                      sets: {
+                        orderBy: {
+                          setNo: "asc",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+      
 
     console.log(program);
 

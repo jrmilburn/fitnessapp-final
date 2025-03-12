@@ -29,6 +29,27 @@ export default function Set({ set, setProgram }) {
           }))
         }));
       }, [confirmed, weight, reps]);
+
+      const updateSet = async () => {
+
+        const newCompleted = !confirmed;
+
+        const response = await fetch('/api/set',{
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            weight: parseFloat(weight),
+            reps: parseInt(reps),
+            complete: newCompleted,
+            setId: set.id
+          })
+        })
+
+        setConfirmed(newCompleted);
+
+        console.log(await response.json());
+
+      }
       
 
     return (
@@ -44,7 +65,7 @@ export default function Set({ set, setProgram }) {
             />
             <AnimatedCheckbox 
                 checked={confirmed}
-                onChange={setConfirmed}
+                onChange={() => updateSet()}
             />
         </div>
     )
