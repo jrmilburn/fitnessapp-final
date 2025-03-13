@@ -32,7 +32,7 @@ export default function Exercise({ exercise, setProgram, program }) {
         <h6>{exercise?.name}</h6>
         <p className="opacity-[0.5]">{exercise?.muscle}</p>
       </div>
-      <button className="" onClick={toggleModal}>
+      <button className="cursor-pointer" onClick={toggleModal}>
         <Image 
           src="/icons/hori-dots.svg"
           width={32}

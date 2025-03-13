@@ -2,12 +2,22 @@ import Input from "../library/Input"
 import { useState, useEffect } from "react"
 import AnimatedCheckbox from "../library/Checkbox";
 import Image from "next/image";
+import ScrollUp from "../library/ScrollUp";
 
 export default function Set({ set, setProgram }) {
 
     const [weight, setWeight] = useState(set?.weight || "");
     const [reps, setReps] = useState(set?.reps || "");
     const [confirmed, setConfirmed] = useState(set?.complete);
+    const [modalShown, setModalShown] = useState(false);
+
+    const toggleModal = () => {
+
+      const newState = !modalShown;
+
+      setModalShown(newState);
+
+    }
 
     useEffect(() => {
         const targetSetId = set.id;
@@ -54,13 +64,17 @@ export default function Set({ set, setProgram }) {
       
 
     return (
+      <>
         <div className="flex gap-2 w-full items-center">
-            <Image 
-              src="/icons/vert-dots.svg"
-              width={32}
-              height={32}
-              alt="more"
-            />
+            <button onClick={toggleModal} className="w-12 cursor-pointer">
+              <Image 
+                src="/icons/vert-dots.svg"
+                width={32}
+                height={32}
+                alt="more"
+                className="w-full h-full"
+              />
+            </button>
             <Input 
                 inputVal={weight}
                 setInputVal={setWeight}
@@ -74,6 +88,15 @@ export default function Set({ set, setProgram }) {
                 onChange={() => updateSet()}
             />
         </div>
+
+        <ScrollUp
+          modalShown={modalShown}
+          setModalShown={setModalShown}
+        >
+
+        </ScrollUp>
+
+      </>
     )
 
 }

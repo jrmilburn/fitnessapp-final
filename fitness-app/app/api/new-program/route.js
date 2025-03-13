@@ -17,12 +17,13 @@ export async function POST(request) {
 
     const newProgram = await prisma.program.create({
         data: {
-            name: programStructure.name,
-            comments: programStructure.comments,
-            length: programStructure.length,
-            days: programStructure.days
+          name: programStructure.name,
+          comments: programStructure.comments,
+          length: parseInt(programStructure.length, 10),
+          days: parseInt(programStructure.days, 10)
         }
-    });
+      });
+      
 
     for (let i = 0; i < newProgram.length; i++) {
         const newWeek = await prisma.week.create({
