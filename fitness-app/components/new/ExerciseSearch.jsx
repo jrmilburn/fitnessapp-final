@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import ScrollUp from "../library/ScrollUp";
 
-export default function ExerciseSearch({ newExercise, shown, setShown }) {
+export default function ExerciseSearch({ newExercise, setShown }) {
   const [exercises, setExercises] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMuscle, setSelectedMuscle] = useState("");
@@ -24,24 +25,8 @@ export default function ExerciseSearch({ newExercise, shown, setShown }) {
   });
 
   return (
-    <div
-      className={`fixed z-20 top-0 left-[16rem] bg-[var(--primary-bg)] p-4 w-full max-w-[calc(100%-16rem)] h-screen transition-all duration-300 flex flex-col ${
-        shown ? "translate-y-0" : "translate-y-full"
-      }`}
-    >
-      <button
-        className="cursor-pointer w-full border-b flex justify-center mb-8"
-        onClick={() => setShown(false)}
-      >
-        <Image
-          src="/icons/chevron-right.svg"
-          height={32}
-          width={32}
-          alt="close"
-          className="rotate-90"
-        />
-      </button>
-      <div className="mb-4 flex items-center max-w-2xl mx-auto gap-4 w-full">
+      <>
+        <div className="flex w-full gap-2">
         {/* Search Input (applied on type) */}
         <input
           type="text"
@@ -74,13 +59,23 @@ export default function ExerciseSearch({ newExercise, shown, setShown }) {
             <option value="Glutes">Glutes</option>
           </select>
         </div>
-      </div>
+        </div>
       <div className="flex-1 p-4 overflow-y-auto max-w-2xl mx-auto border-b border-t border-black/20 w-full">
         {filteredExercises.map((exercise, index) => (
           <div key={index} 
-                className="border-b border-black/10 flex justify-between p-2 cursor-pointer group hover:bg-[var(--secondary-bg)]/50 transition-all duration-300"
+                className="border-b border-black/10 flex justify-between p-2 cursor-pointer group hover:bg-[var(--secondary-bg)]/50 transition-all duration-500"
                 onClick={() => {
-                    newExercise(exercise);
+                    newExercise({
+                      ...exercise,
+                      sets: [
+                        {
+                          setNo: 1,
+                        },
+                        {
+                          setNo: 2
+                        }
+                      ]
+                    });
                     setShown(false);
                 }}
                 >
@@ -97,7 +92,7 @@ export default function ExerciseSearch({ newExercise, shown, setShown }) {
             />
           </div>
         ))}
-      </div>
-    </div>
+        </div>
+      </>
   );
 }

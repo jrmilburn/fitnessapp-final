@@ -87,6 +87,7 @@ model Workout {
 
 model Exercise {
   id        String  @id @default(cuid())
+  exerciseNo Int @default(0)
   name      String
   muscle    String
   workoutId String

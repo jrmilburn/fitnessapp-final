@@ -11,6 +11,7 @@ import {
   import ExerciseSearch from "./ExerciseSearch";
   import ExerciseStructure from "./ExerciseStructure";
   import { useState } from "react";
+  import ScrollUp from '../library/ScrollUp';
   
   // A wrapper for each sortable exercise item.
   function SortableItem({ id, children }) {
@@ -137,8 +138,12 @@ import {
             Add New +
           </button>
         </div>
-  
-        <ExerciseSearch newExercise={newExercise} shown={showModal} setShown={setShowModal} />
+        <ScrollUp
+          modalShown={showModal}
+          setModalShown={setShowModal}
+        >
+          <ExerciseSearch newExercise={newExercise} setShown={setShowModal} />
+        </ScrollUp>
       </>
     );
   }

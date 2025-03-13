@@ -4,8 +4,11 @@ import ProgramStructure from "../../components/new/ProgramStructure"
 import WeekLayout from "../../components/new/WeekStructure";
 import { useState, useEffect } from 'react';
 import Button from "../../components/library/Button";
+import { useRouter } from "next/navigation";
 
 export default function NewPage() {
+
+    const router = useRouter();
 
     /**state variables to be intialised */
     const [programStructure, setProgramStructure] = useState({
@@ -48,9 +51,9 @@ export default function NewPage() {
             })
         })
 
-        const data = await response.json();
-
-        console.log(data);
+        if(response.ok) {
+            router.push('/workout')
+        }
 
       }
       

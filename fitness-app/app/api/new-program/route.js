@@ -46,11 +46,12 @@ export async function POST(request) {
                     data: {
                         name: weekLayout[j].exercises[k].name,
                         muscle: weekLayout[j].exercises[k].muscle,
+                        exerciseNo: k + 1,
                         workoutId: newWorkout.id
                     }
                 })
 
-                for (let l = 0; l < 2; l++) {
+                for (let l = 0; l < weekLayout[j].exercises[k].sets.length; l++) {
                     const newSet = await prisma.set.create({
                         data: {
                             setNo: l + 1,

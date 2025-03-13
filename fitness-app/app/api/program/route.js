@@ -31,6 +31,9 @@ export async function GET() {
                 },
                 include: {
                   exercises: {
+                    orderBy: {
+                      exerciseNo: "asc",
+                    },
                     include: {
                       sets: {
                         orderBy: {

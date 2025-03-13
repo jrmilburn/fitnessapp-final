@@ -16,15 +16,16 @@ export default function NextWorkout({ program, setCurrentWorkout }) {
       return;
     }
 
-    const next = program.weeks
-      .flatMap(week => week.workouts)
-      .find(workout =>
-        workout.exercises.every(exercise =>
-          exercise.sets.every(set => set.complete === false)
-        )
-      );
-
-    setCurrentWorkout(next);
+    const nextWorkoutWithIncompleteSet = program.weeks
+    .flatMap(week => week.workouts)
+    .find(workout =>
+      workout.exercises.some(exercise =>
+        exercise.sets.some(set => !set.complete)
+      )
+    );
+  
+    setCurrentWorkout(nextWorkoutWithIncompleteSet);
+  
   };
 
   const finishProgram = () => {

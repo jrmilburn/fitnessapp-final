@@ -1,6 +1,7 @@
 import Input from "../library/Input"
 import { useState, useEffect } from "react"
 import AnimatedCheckbox from "../library/Checkbox";
+import Image from "next/image";
 
 export default function Set({ set, setProgram }) {
 
@@ -53,8 +54,13 @@ export default function Set({ set, setProgram }) {
       
 
     return (
-        <div className="flex gap-2 w-full">
-            <p className="opacity-[0.5]">{set?.setNo}</p>
+        <div className="flex gap-2 w-full items-center">
+            <Image 
+              src="/icons/vert-dots.svg"
+              width={32}
+              height={32}
+              alt="more"
+            />
             <Input 
                 inputVal={weight}
                 setInputVal={setWeight}
