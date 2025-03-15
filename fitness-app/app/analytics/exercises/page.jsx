@@ -67,7 +67,7 @@ export default async function ExerciseAnalytics() {
 
   return (
     <div className="max-w-[calc(100% - 16rem)] ml-64 min-h-screen flex flex-col gap-4 justify-start items-center p-4 relative">
-      <div className="max-w-2xl mx-auto w-full flex flex-col">
+      <div className="max-w-2xl mx-auto w-full max-h-screen flex flex-col">
         <h6 className="mb-8">Weekly Set Volumes</h6>
         {sortedMuscles.map((muscle, index) => (
           <div key={muscle} className="w-full">

@@ -32,7 +32,7 @@ export default function BarChart({ chartData, options, muscle }) {
   };
 
   return (
-    <div className="relative flex gap-2 items-center h-[200px] w-full justify-between">
+    <div className="relative flex gap-2 items-center max-h-[200px] w-full justify-between">
       <h6 className="absolute left-[-10%]">{muscle}</h6>
       <Bar data={chartData} options={options || defaultOptions} />
     </div>
