@@ -20,12 +20,13 @@ export async function POST(request) {
           name: programStructure.name,
           comments: programStructure.comments,
           length: parseInt(programStructure.length, 10),
-          days: parseInt(programStructure.days, 10)
+          days: parseInt(programStructure.days, 10),
+          userId: user.id
         }
       });
       
 
-    for (let i = 0; i < newProgram.length; i++) {
+    for (let i = 0; i < weekLayout.length; i++) {
         const newWeek = await prisma.week.create({
             data: {
                 weekNo: i + 1,
@@ -33,26 +34,26 @@ export async function POST(request) {
             }
         })
 
-        for (let j = 0; j < programStructure.days; j++) {
+        for (let j = 0; j < weekLayout[i].workouts.length; j++) {
             const newWorkout = await prisma.workout.create({
                 data: {
-                    name: weekLayout[j].name,
-                    workoutNo: weekLayout[j].workoutNo,
+                    name: weekLayout[i].workouts[j].name,
+                    workoutNo: weekLayout[i].workouts[j].workoutNo,
                     weekId: newWeek.id
                 }
             })
 
-            for (let k = 0; k < weekLayout[j].exercises.length; k++) {
+            for (let k = 0; k < weekLayout[i].workouts[j].exercises.length; k++) {
                 const newExercise = await prisma.exercise.create({
                     data: {
-                        name: weekLayout[j].exercises[k].name,
-                        muscle: weekLayout[j].exercises[k].muscle,
+                        name: weekLayout[i].workouts[j].exercises[k].name,
+                        muscle: weekLayout[i].workouts[j].exercises[k].muscle,
                         exerciseNo: k + 1,
                         workoutId: newWorkout.id
                     }
                 })
 
-                for (let l = 0; l < weekLayout[j].exercises[k].sets.length; l++) {
+                for (let l = 0; l < weekLayout[i].workouts[j].exercises[k].sets.length; l++) {
                     const newSet = await prisma.set.create({
                         data: {
                             setNo: l + 1,

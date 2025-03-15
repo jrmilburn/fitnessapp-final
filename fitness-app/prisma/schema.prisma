@@ -63,6 +63,8 @@ model Program {
   length   Int
   days     Int
 
+  userId String?
+
   weeks Week[]
 }
 

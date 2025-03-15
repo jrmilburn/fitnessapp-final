@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Input from "../library/Input";
 
-export default function ExerciseStructure({ exercise, onDelete }) {
+export default function ExerciseStructure({ exercise, onDelete, setWeekLayout }) {
+
+    console.log(exercise);
 
     return (
         <div className="w-full bg-[var(--primary-bg)] p-2 relative overflow-x-none z-20 cursor-pointer ">

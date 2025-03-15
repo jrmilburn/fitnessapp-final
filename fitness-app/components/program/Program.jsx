@@ -5,7 +5,7 @@ export default function Program({ program }) {
 
     return (
           <Link
-                href={`/programs/${program.id}`}
+                href={`/program/${program.id}`}
                 className="border-b border-black/10 flex justify-between p-2 cursor-pointer group hover:bg-[var(--secondary-bg)]/50 transition-all duration-300"
                 >
             <div className="flex flex-col">

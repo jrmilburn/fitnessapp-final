@@ -4,7 +4,7 @@ import NextWorkout from "./NextWorkout";
 export default function Workout({ workout, setProgram, program, setCurrentWorkout, currentWorkoutState }) {
   const currentWorkout = program?.weeks
     ?.flatMap(week => week.workouts)
-    .find(w => w.id === workout.id);    
+    .find(w => w.id === workout?.id);    
 
   const isWorkoutComplete = currentWorkout?.exercises?.every(exercise =>
     exercise?.sets.every(set => set.complete)

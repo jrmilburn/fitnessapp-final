@@ -1,25 +1,18 @@
 "use client"
 
-import { useSession } from "next-auth/react"
 import { useState, useEffect } from "react";
 
 import Workout from "../../components/workout/Workout";
 import WorkoutHeader from "../../components/workout/WorkoutHeader";
 
-export default function WorkoutPage() {
+export default function WorkoutView({ initProgram }) {
 
-    const { data: session } = useSession();
-    const [program, setProgram] = useState(null);
+    const [program, setProgram] = useState(initProgram);
     const [currentWorkout, setCurrentWorkout] = useState(null);
 
     useEffect(() => {
-        fetch('/api/program')
-        .then(response => response.json())
-        .then(data => {
-            setProgram(data)
-            setCurrentWorkout(data?.weeks[0]?.workouts[0]);
-            console.log(data);
-        })
+        setProgram(initProgram)
+        setCurrentWorkout(initProgram?.weeks[0]?.workouts[0]);
     }, [])
     
 

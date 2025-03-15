@@ -20,25 +20,33 @@ export default function NewPage() {
     const [weekLayout, setWeekLayout] = useState(null);
 
     const loadLayout = (e) => {
-
         e.preventDefault();
-
+      
         const daysCount = programStructure.days;
-
+        const weeksCount = programStructure.length;
+      
         let workouts = [];
-
-        for(let i = 0; i < daysCount; i++){
-
-            workouts.push({
-                name: "Day " + parseInt(i+1),
-                workoutNo: i + 1,
-                exercises: []
-            })
-
+        let weeks = [];
+      
+        for (let i = 0; i < daysCount; i++) {
+          workouts.push({
+            name: "Day " + (i + 1),
+            workoutNo: i + 1,
+            exercises: [],
+          });
+        }
+      
+        // Create a separate copy of the workouts array for each week
+        for (let i = 0; i < weeksCount; i++) {
+          weeks.push({
+            weekNo: i + 1,
+            workouts: workouts
+          });
         }
 
-        setWeekLayout(workouts);
+        setWeekLayout(weeks);
       };
+      
 
       const createProgram = async () => {
 

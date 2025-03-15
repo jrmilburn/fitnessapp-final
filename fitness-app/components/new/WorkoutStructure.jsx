@@ -27,26 +27,39 @@ import {
     );
   }
   
-  export default function WorkoutStructure({ workout, setWeekLayout }) {
+  export default function WorkoutStructure({ workout, setWeekLayout, weekNo }) {
     const [showModal, setShowModal] = useState(false);
     const [activeId, setActiveId] = useState(null);
   
     const toggleModal = () => setShowModal((prev) => !prev);
   
     const newExercise = (exercise) => {
-      setWeekLayout((prevWeekLayout) =>
-        prevWeekLayout.map((w) =>
+      setWeekLayout((prevWeekLayout) => {
+    
+        // Update the workouts for the week at index weekNo
+        const updatedWorkouts = prevWeekLayout[weekNo].workouts.map((w) =>
           w.workoutNo === workout.workoutNo
             ? { ...w, exercises: [...w.exercises, exercise] }
             : w
-        )
-      );
+        );
+    
+        // Create a new week object with updated workouts
+        const updatedWeek = { ...prevWeekLayout[weekNo], workouts: updatedWorkouts };
+    
+        // Replace the week at weekNo with the updated week, leaving others unchanged
+        const newLayout = prevWeekLayout.map((week, idx) =>
+          idx === weekNo ? updatedWeek : week
+        );
+    
+        return newLayout;
+      });
     };
+    
   
     const updateWorkoutName = (e) => {
       const newName = e.target.value;
       setWeekLayout((prevWeekLayout) =>
-        prevWeekLayout.map((w) =>
+        prevWeekLayout[weekNo].workouts.map((w) =>
           w.workoutNo === workout.workoutNo ? { ...w, name: newName } : w
         )
       );
@@ -54,7 +67,7 @@ import {
   
     const onDelete = (exercise) => {
       setWeekLayout((prevWeekLayout) =>
-        prevWeekLayout.map((w) =>
+        prevWeekLayout[weekNo].workouts.map((w) =>
           w.workoutNo === workout.workoutNo
             ? { ...w, exercises: w.exercises.filter((e) => e !== exercise) }
             : w
@@ -79,7 +92,7 @@ import {
       if (!over || active.id === over.id) return;
       
       setWeekLayout((prevWeekLayout) =>
-        prevWeekLayout.map((w) => {
+        prevWeekLayout[weekNo].workouts.map((w) => {
           if (w.workoutNo === workout.workoutNo) {
             const oldIndex = w.exercises.findIndex((ex) => ex.id === active.id);
             const newIndex = w.exercises.findIndex((ex) => ex.id === over.id);
@@ -128,6 +141,7 @@ import {
                   <ExerciseStructure 
                     exercise={draggedExercise} 
                     onDelete={() => {}} // disable delete in overlay
+                    setWeekLayout={setWeekLayout}
                   />
                 </div>
               ) : null}
