@@ -12,6 +12,7 @@ import {
   import ExerciseStructure from "./ExerciseStructure";
   import { useState } from "react";
   import ScrollUp from '../library/ScrollUp';
+import WeekLayout from './WeekStructure';
   
   // A wrapper for each sortable exercise item.
   function SortableItem({ id, children }) {
@@ -58,22 +59,34 @@ import {
   
     const updateWorkoutName = (e) => {
       const newName = e.target.value;
-      setWeekLayout((prevWeekLayout) =>
-        prevWeekLayout[weekNo].workouts.map((w) =>
-          w.workoutNo === workout.workoutNo ? { ...w, name: newName } : w
-        )
-      );
+      setWeekLayout((prevWeekLayout) => {
+        const newWeekLayout = [...prevWeekLayout];
+        newWeekLayout[weekNo] = {
+          ...newWeekLayout[weekNo],
+          workouts: newWeekLayout[weekNo].workouts.map((w) =>
+            w.id === workout.id ? { ...w, name: newName } : w
+          ),
+        };
+        return newWeekLayout;
+      });
     };
+    
   
     const onDelete = (exercise) => {
-      setWeekLayout((prevWeekLayout) =>
-        prevWeekLayout[weekNo].workouts.map((w) =>
-          w.workoutNo === workout.workoutNo
-            ? { ...w, exercises: w.exercises.filter((e) => e !== exercise) }
-            : w
-        )
-      );
+      setWeekLayout((prevWeekLayout) => {
+        const newWeekLayout = [...prevWeekLayout];
+        newWeekLayout[weekNo] = {
+          ...newWeekLayout[weekNo],
+          workouts: newWeekLayout[weekNo].workouts.map((w) =>
+            w.workoutNo === workout.workoutNo
+              ? { ...w, exercises: w.exercises.filter((e) => e !== exercise) }
+              : w
+          ),
+        };
+        return newWeekLayout;
+      });
     };
+    
   
     // Set up sensors for dragging.
     const sensors = useSensors(
@@ -90,18 +103,24 @@ import {
       const { active, over } = event;
       setActiveId(null);
       if (!over || active.id === over.id) return;
-      
-      setWeekLayout((prevWeekLayout) =>
-        prevWeekLayout[weekNo].workouts.map((w) => {
-          if (w.workoutNo === workout.workoutNo) {
-            const oldIndex = w.exercises.findIndex((ex) => ex.id === active.id);
-            const newIndex = w.exercises.findIndex((ex) => ex.id === over.id);
-            return { ...w, exercises: arrayMove(w.exercises, oldIndex, newIndex) };
-          }
-          return w;
-        })
-      );
+    
+      setWeekLayout((prevWeekLayout) => {
+        const newWeekLayout = [...prevWeekLayout];
+        newWeekLayout[weekNo] = {
+          ...newWeekLayout[weekNo],
+          workouts: newWeekLayout[weekNo].workouts.map((w) => {
+            if (w.workoutNo === workout.workoutNo) {
+              const oldIndex = w.exercises.findIndex((ex) => ex.id === active.id);
+              const newIndex = w.exercises.findIndex((ex) => ex.id === over.id);
+              return { ...w, exercises: arrayMove(w.exercises, oldIndex, newIndex) };
+            }
+            return w;
+          }),
+        };
+        return newWeekLayout;
+      });
     };
+    
   
     // Find the dragged exercise data so we can render it in the overlay.
     const draggedExercise = workout.exercises.find(ex => ex.id === activeId);

@@ -27,6 +27,7 @@ model User {
 
   currentProgramId String?
 
+  fatigue Int @default(0)
 }
 
 model Account {
@@ -84,16 +85,17 @@ model Workout {
   weekId    String
   week      Week   @relation(fields: [weekId], references: [id])
 
-  exercises Exercise[]
+  exercises      Exercise[]
+  MuscleFeedback MuscleFeedback[]
 }
 
 model Exercise {
-  id        String  @id @default(cuid())
-  exerciseNo Int @default(0)
-  name      String
-  muscle    String
-  workoutId String
-  workout   Workout @relation(fields: [workoutId], references: [id])
+  id         String  @id @default(cuid())
+  exerciseNo Int     @default(0)
+  name       String
+  muscle     String
+  workoutId  String
+  workout    Workout @relation(fields: [workoutId], references: [id])
 
   sets Set[]
 }
@@ -106,4 +108,17 @@ model Set {
   complete   Boolean  @default(false)
   exerciseId String
   exercise   Exercise @relation(fields: [exerciseId], references: [id])
+}
+
+model MuscleFeedback {
+  id        String   @id @default(cuid())
+  workoutId String
+  muscle    String
+  workload  Int
+  jointpain Int
+  soreness  Int
+  comment   String?
+  createdAt DateTime @default(now())
+
+  workout Workout @relation(fields: [workoutId], references: [id])
 }

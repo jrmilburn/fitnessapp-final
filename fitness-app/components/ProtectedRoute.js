@@ -16,7 +16,7 @@ export default function ProtectedRoute({ children }) {
   const [shouldFadeOut, setShouldFadeOut] = useState(false);
 
   // Define paths that do not require authentication
-  const unprotectedPaths = ["/auth/login", "/auth/register"];
+  const unprotectedPaths = ["/auth/login", "/auth/register", "/"];
   const isUnprotectedPath = unprotectedPaths.includes(pathname);
 
   useEffect(() => {

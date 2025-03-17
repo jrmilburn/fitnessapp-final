@@ -17,6 +17,7 @@ export default function ExerciseStructure({ exercise, onDelete, setWeekLayout })
                     alt="close icon"
                 />
             </button>
+            <div className="w-full bg-black/20 h-[1px] my-2"></div>
         </div>
     )
 
