@@ -2,7 +2,7 @@ import Button from "../library/Button";
 
 export default function NextWorkout({ program, setCurrentWorkout }) {
   
-    const allSetsComplete = program.weeks
+    const allSetsComplete = program?.weeks
         .flatMap(week => week.workouts)
         .flatMap(workout => workout.exercises)
         .every(exercise =>

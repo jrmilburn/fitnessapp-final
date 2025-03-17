@@ -13,7 +13,7 @@ export default function ScrollUp({ children, modalShown, setModalShown  }){
                     className="rotate-90"
                 />
             </button>
-            <div className="flex flex-col max-w-2xl mx-auto items-center">
+            <div className="flex flex-col max-w-2xl mx-auto items-center overflow-y-auto max-h-[calc(100vh-100px)]">
                 {children}
             </div>
         </div>

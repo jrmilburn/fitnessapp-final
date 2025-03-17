@@ -1,14 +1,7 @@
 import Exercise from "./Exercise";
-import NextWorkout from "./NextWorkout";
+import FeedbackForm from "./FeedbackForm"
 
-export default function Workout({ workout, setProgram, program, setCurrentWorkout, currentWorkoutState }) {
-  const currentWorkout = program?.weeks
-    ?.flatMap(week => week.workouts)
-    .find(w => w.id === workout?.id);    
-
-  const isWorkoutComplete = currentWorkout?.exercises?.every(exercise =>
-    exercise?.sets.every(set => set.complete)
-  );
+export default function Workout({ workout, setProgram, program, setCurrentWorkout }) {
   
   return (
     // Removed gap-4 from container class
@@ -29,13 +22,11 @@ export default function Workout({ workout, setProgram, program, setCurrentWorkou
         );
       })}
 
-      {isWorkoutComplete && (
-        <NextWorkout 
+        <FeedbackForm 
           program={program}
-          currentWorkoutState={currentWorkoutState}
           setCurrentWorkout={setCurrentWorkout}
+          workout={workout}
         />
-      )}
     </div>
   );
 }

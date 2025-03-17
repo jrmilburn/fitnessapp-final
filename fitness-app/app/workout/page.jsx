@@ -11,6 +11,7 @@ export default function WorkoutPage() {
     const { data: session } = useSession();
     const [program, setProgram] = useState(null);
     const [currentWorkout, setCurrentWorkout] = useState(null);
+    const [feedbackShown, setFeedbackShown] = useState(false);
 
     useEffect(() => {
         fetch('/api/program')
@@ -36,7 +37,6 @@ export default function WorkoutPage() {
                 setProgram={setProgram}
                 program={program}
                 setCurrentWorkout={setCurrentWorkout}
-                currentWorkoutState={currentWorkout}
             />
             </div>
         </div>
