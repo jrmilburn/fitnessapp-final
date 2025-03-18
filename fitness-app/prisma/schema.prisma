@@ -87,6 +87,9 @@ model Workout {
 
   exercises      Exercise[]
   MuscleFeedback MuscleFeedback[]
+
+  nextWorkoutId String?
+  previousWorkoutId String?
 }
 
 model Exercise {
@@ -117,7 +120,6 @@ model MuscleFeedback {
   workload  Int
   jointpain Int
   soreness  Int
-  comment   String?
   createdAt DateTime @default(now())
 
   workout Workout @relation(fields: [workoutId], references: [id])

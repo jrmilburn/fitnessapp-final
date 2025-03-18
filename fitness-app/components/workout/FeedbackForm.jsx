@@ -62,10 +62,21 @@ export default function FeedbackForm({ program, currentWorkoutState, setCurrentW
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Submitting feedback:", feedbackData);
-    // Here you can send the data to your backend/API for processing/storing.
+    
+    const response = await fetch('/api/feedback', {
+      method: 'POST',
+      body: JSON.stringify({
+        feedbackData,
+        workoutId: workout.id
+      })
+    })
+
+    setFormShown(false)
+
+    return response;
+
   };
 
   // Render radio button inputs for a 1-10 scale for a given muscle and field.
@@ -155,9 +166,11 @@ export default function FeedbackForm({ program, currentWorkoutState, setCurrentW
             </>
           )}
         </div>
-        <button type="submit" className="bg-blue-500 text-white p-2 rounded mx-12">
-          Submit Feedback
-        </button>
+        <NextWorkout 
+          program={program}
+          setCurrentWorkout={setCurrentWorkout}
+          handleSubmit={handleSubmit}
+        />
       </form>
     </ScrollUp>
     </>

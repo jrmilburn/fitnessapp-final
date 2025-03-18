@@ -1,6 +1,6 @@
 import Button from "../library/Button";
 
-export default function NextWorkout({ program, setCurrentWorkout }) {
+export default function NextWorkout({ program, setCurrentWorkout, handleSubmit }) {
   
     const allSetsComplete = program?.weeks
         .flatMap(week => week.workouts)
@@ -9,22 +9,28 @@ export default function NextWorkout({ program, setCurrentWorkout }) {
           exercise.sets.every(set => set.complete)
     );
     
-    const nextWorkout = () => {
+    const nextWorkout = async (e) => {
+
+      const response = await handleSubmit(e);
 
     if (allSetsComplete) {
       
       return;
     }
 
-    const nextWorkoutWithIncompleteSet = program.weeks
-    .flatMap(week => week.workouts)
-    .find(workout =>
-      workout.exercises.some(exercise =>
-        exercise.sets.some(set => !set.complete)
-      )
-    );
-  
-    setCurrentWorkout(nextWorkoutWithIncompleteSet);
+    if(response.ok) {
+      const nextWorkoutWithIncompleteSet = program.weeks
+      .flatMap(week => week.workouts)
+      .find(workout =>
+        workout.exercises.some(exercise =>
+          exercise.sets.some(set => !set.complete)
+        )
+      );
+    
+      setCurrentWorkout(nextWorkoutWithIncompleteSet);
+    }
+
+    return
   
   };
 
