@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]/route";
 
 import { prisma } from "../../../lib/prisma";
 
@@ -38,6 +40,14 @@ async function CreateFeedback(workoutId, feedbackData) {
 
 async function UpdateVolume(workoutId) {
 
+    const session = await getServerSession(authOptions);
+
+    const user = await prisma.user.findUnique({
+        where: {
+            email: session?.user?.email
+        }
+    })
+
     const currentWorkout = await prisma.workout.findUnique({
         where: {
             id: workoutId
@@ -53,7 +63,16 @@ async function UpdateVolume(workoutId) {
         }
     })
 
-    const exercises = await prisma.exercise.findMany({
+    const currentExercises = await prisma.exercise.findMany({
+        where: {
+            workoutId: currentWorkout.id
+        },
+        include: {
+            sets: true
+        }
+    })
+
+    const nextExercises = await prisma.exercise.findMany({
         where: {
             workoutId: nextWorkout.id
         }
@@ -65,21 +84,56 @@ async function UpdateVolume(workoutId) {
         }
     })
 
-    console.log(exercises);
     console.log(feedback);
+
+    for (let i = 0; i < nextExercises.length; i++) {
+
+        const currentSetCount = currentExercises[i].sets.length;
+        const newSetCount = CalculateSets(currentSetCount, feedback[0].workload, feedback[0].jointpain, feedback[0].soreness, user.fatigue);
+        
+        for (let j = 0; j < Math.floor(newSetCount); j++) {
+
+            const newSet = await prisma.set.create({
+                data: {
+                    exerciseId: nextExercises[i].id,
+                    reps: 0,
+                    weight: 0,
+                    setNo: j + 1
+                }
+            })
+
+            console.log(newSet);
+
+        }
+
+
+    }
+
+    
 
 }
 
 /**This is the volume regulation algorithm */
 
 function CalculateSets(currentSetCount, workload, jointpain, soreness, fatigue) {
-    // Normalize each input using the derived linear formula
-    const normalisedWorkload  = -0.1 * workload  + 1.35;
-    const normalisedJointPain = -0.1 * jointpain + 1.35;
-    const normalisedSoreness  = -0.1 * soreness  + 1.35;
-    const normalisedFatigue   = -0.1 * fatigue   + 1.35;
+
+    console.log(currentSetCount);
+    console.log(workload);
+    console.log(jointpain);
+    console.log(soreness);
+    console.log(fatigue);
+
+    const normalisedWorkload  = -0.08 * workload  + 1.2;
+    const normalisedJointPain = -0.08 * jointpain + 1.2;
+    const normalisedSoreness  = -0.08 * soreness  + 1.2;
+    const normalisedFatigue   = -0.08 * fatigue   + 1.2;
+
+    console.log(normalisedWorkload);
+    console.log(normalisedJointPain);
+    console.log(normalisedSoreness);
+    console.log(normalisedFatigue);
   
-    const volumeFactor = currentSetCount * normalisedWorkload * normalisedJointPain * normalisedSoreness * normalisedFatigue;
+    const volumeFactor = normalisedWorkload * normalisedJointPain * normalisedSoreness * normalisedFatigue;
     
     const newSetCount = currentSetCount * volumeFactor;
   
