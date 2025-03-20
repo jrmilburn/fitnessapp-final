@@ -3,7 +3,7 @@ import ScrollUp from "../library/ScrollUp";
 import NextWorkout from "./NextWorkout";
 import Button from "../library/Button";
 
-export default function FeedbackForm({ program, currentWorkoutState, setCurrentWorkout, workout }) {
+export default function FeedbackForm({ program, currentWorkoutState, setCurrentWorkout, workout, setProgram }) {
   // Find the current workout from the program data
   const currentWorkout = program?.weeks
     ?.flatMap(week => week.workouts)
@@ -74,6 +74,14 @@ export default function FeedbackForm({ program, currentWorkoutState, setCurrentW
     })
 
     setFormShown(false)
+
+    if (response.ok) {
+
+      const data = await response.json();
+      setProgram(data.program);
+      console.log(data.program);
+
+    }
 
     return response;
 

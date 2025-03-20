@@ -26,6 +26,7 @@ export default function Workout({ workout, setProgram, program, setCurrentWorkou
           program={program}
           setCurrentWorkout={setCurrentWorkout}
           workout={workout}
+          setProgram={setProgram}
         />
     </div>
   );

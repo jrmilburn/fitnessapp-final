@@ -6,15 +6,45 @@ import { prisma } from "../../../lib/prisma";
 
 export async function POST(request) {
 
+    const session = await getServerSession(authOptions);
+
+    const user = await prisma.user.findUnique({
+        where: {
+            email: session?.user?.email
+        }
+    })
+
     const { workoutId, feedbackData } = await request.json()
 
     const workoutFeedBack = await CreateFeedback(workoutId, feedbackData);
 
-    const nextWorkout = await UpdateVolume(workoutId);
+    const nextWorkout = await UpdateVolume(workoutId, user.fatigue);
+
+    const updatedProgram = await prisma.program.findUnique({
+        where: {
+            id: user.currentProgramId
+        },
+        include: {
+            weeks: {
+                include: {
+                    workouts: {
+                        include: {
+                            exercises: {
+                                include: {
+                                    sets: true
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    })
 
 
     return NextResponse.json({
-        message: "Feedback submitted successfully"
+        message: "Feedback submitted successfully",
+        program: updatedProgram
     })
 
 }
@@ -38,15 +68,7 @@ async function CreateFeedback(workoutId, feedbackData) {
     return feedback;
 }
 
-async function UpdateVolume(workoutId) {
-
-    const session = await getServerSession(authOptions);
-
-    const user = await prisma.user.findUnique({
-        where: {
-            email: session?.user?.email
-        }
-    })
+async function UpdateVolume(workoutId, userFatigue) {
 
     const currentWorkout = await prisma.workout.findUnique({
         where: {
@@ -89,7 +111,7 @@ async function UpdateVolume(workoutId) {
     for (let i = 0; i < nextExercises.length; i++) {
 
         const currentSetCount = currentExercises[i].sets.length;
-        const newSetCount = CalculateSets(currentSetCount, feedback[0].workload, feedback[0].jointpain, feedback[0].soreness, user.fatigue);
+        const newSetCount = CalculateSets(currentSetCount, feedback[0].workload, feedback[0].jointpain, feedback[0].soreness, userFatigue);
         
         for (let j = 0; j < Math.floor(newSetCount); j++) {
 
