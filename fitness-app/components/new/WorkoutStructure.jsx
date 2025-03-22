@@ -28,7 +28,7 @@ import WeekLayout from './WeekStructure';
     );
   }
   
-  export default function WorkoutStructure({ workout, setWeekLayout, weekNo, autoRegulated   }) {
+  export default function WorkoutStructure({ workout, setWeekLayout, weekNo, autoRegulated, workoutIndex, weekIndex   }) {
     const [showModal, setShowModal] = useState(false);
     const [activeId, setActiveId] = useState(null);
   
@@ -145,12 +145,16 @@ import WeekLayout from './WeekStructure';
               items={workout.exercises.map((exercise) => exercise.id)}
               strategy={verticalListSortingStrategy}
             >
-              {workout.exercises.map((exercise) => (
+              {workout.exercises.map((exercise, index) => (
                 <SortableItem key={exercise.id} id={exercise.id}>
                   <ExerciseStructure
                     exercise={exercise}
                     onDelete={() => onDelete(exercise)}
                     autoRegulated={autoRegulated}
+                    setWeekLayout={setWeekLayout}
+                    weekIndex={weekIndex}
+                    workoutIndex={workoutIndex}
+                    exerciseIndex={index}
                   />
                 </SortableItem>
               ))}
@@ -161,6 +165,7 @@ import WeekLayout from './WeekStructure';
                   <ExerciseStructure 
                     exercise={draggedExercise} 
                     onDelete={() => {}} // disable delete in overlay
+                    autoRegulated={autoRegulated}
                     setWeekLayout={setWeekLayout}
                   />
                 </div>
