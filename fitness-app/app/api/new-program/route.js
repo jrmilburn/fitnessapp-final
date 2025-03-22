@@ -15,7 +15,7 @@ export async function POST(request) {
 
     const { weekLayout, programStructure, autoRegulated } = await request.json();
 
-    const newProgram = await CreateProgram(user.id, weekLayout, programStructure);
+    const newProgram = await CreateProgram(user.id, weekLayout, programStructure, autoRegulated);
 
     /**update user current program */
     await prisma.user.update({
@@ -67,7 +67,7 @@ async function CreateProgram(userId, weekLayout, programStructure, autoRegulated
               name: weekLayout[i].workouts[j].name,
               workoutNo: weekLayout[i].workouts[j].workoutNo,
               weekId: newWeek.id,
-              programmed: i + 1 === 1
+              programmed: (i + 1 === 1 || !autoRegulated)
             },
           });
       
@@ -105,7 +105,7 @@ async function CreateProgram(userId, weekLayout, programStructure, autoRegulated
             });
       
             // Create sets for the exercise.
-            for (let l = 0; (l < weekLayout[i].workouts[j].exercises[k].sets.length && (!program.autoRegulated || newWeek.weekNo === 1)); l++) {
+            for (let l = 0; (l < weekLayout[i].workouts[j].exercises[k].sets.length && (!newProgram.autoRegulated || newWeek.weekNo === 1)); l++) {
               const newSet = await prisma.set.create({
                 data: {
                   setNo: l + 1,

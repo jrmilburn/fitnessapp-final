@@ -81,6 +81,7 @@ export default function WeekLayout({ weekLayout, setWeekLayout, autoRegulated })
                 workout={workout}
                 weekNo={autoRegulated ? 0 : weekNo} // If autoRegulated, you can simply pass 0 or adjust as needed.
                 setWeekLayout={setWeekLayout}
+                autoRegulated={autoRegulated}
               />
             ))}
           </div>

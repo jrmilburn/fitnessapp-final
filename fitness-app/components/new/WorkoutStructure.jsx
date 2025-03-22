@@ -28,7 +28,7 @@ import WeekLayout from './WeekStructure';
     );
   }
   
-  export default function WorkoutStructure({ workout, setWeekLayout, weekNo }) {
+  export default function WorkoutStructure({ workout, setWeekLayout, weekNo, autoRegulated   }) {
     const [showModal, setShowModal] = useState(false);
     const [activeId, setActiveId] = useState(null);
   
@@ -150,6 +150,7 @@ import WeekLayout from './WeekStructure';
                   <ExerciseStructure
                     exercise={exercise}
                     onDelete={() => onDelete(exercise)}
+                    autoRegulated={autoRegulated}
                   />
                 </SortableItem>
               ))}
