@@ -2,10 +2,8 @@ import Info from "../library/Info";
 import CheckBox from "../library/Checkbox";
 import Input from "../library/Input";
 import Image from "next/image";
-import { useState } from "react";
 
-export default function ProgramStructure({ programStructure, setProgramStructure, loadLayout }) {
-  const [autoRegulated, setAutoRegulated] = useState(false);
+export default function ProgramStructure({ programStructure, setProgramStructure, loadLayout, autoRegulated, setAutoRegulated }) {
 
   const autoRegulationInfo = {
     heading: "Autoregulation",

@@ -64,6 +64,8 @@ model Program {
   length   Int
   days     Int
 
+  autoRegulated Boolean @default(false)
+
   userId String?
 
   weeks Week[]
@@ -90,6 +92,10 @@ model Workout {
 
   nextWorkoutId String?
   previousWorkoutId String?
+
+  programmed Boolean @default(false)
+
+  feedbackId String?
 }
 
 model Exercise {

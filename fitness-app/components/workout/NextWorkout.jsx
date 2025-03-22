@@ -1,6 +1,6 @@
 import Button from "../library/Button";
 
-export default function NextWorkout({ program, setCurrentWorkout, handleSubmit }) {
+export default function NextWorkout({ program, setCurrentWorkout, handleSubmit, workout }) {
   
     const allSetsComplete = program?.weeks
         .flatMap(week => week.workouts)
@@ -11,7 +11,15 @@ export default function NextWorkout({ program, setCurrentWorkout, handleSubmit }
     
     const nextWorkout = async (e) => {
 
-      const response = await handleSubmit(e);
+      let response;
+
+      if(workout.feedbackId) {
+        response = {
+          ok: true
+        };
+      } else {
+        response = await handleSubmit(e);
+      }
 
     if (allSetsComplete) {
       
@@ -42,7 +50,15 @@ export default function NextWorkout({ program, setCurrentWorkout, handleSubmit }
 
   return (
     <>
-    {allSetsComplete ? (
+    {workout?.feedbackId ? (
+      
+      <Button 
+        type="button"
+        text="Current Workout"
+        onClick={nextWorkout}
+      />
+
+    ) : allSetsComplete ? (
     <Button 
         type="button"
         text="Finish Program"

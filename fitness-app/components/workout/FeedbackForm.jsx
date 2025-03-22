@@ -137,12 +137,20 @@ export default function FeedbackForm({ program, currentWorkoutState, setCurrentW
     <>
 
     <div className="w-full flex justify-center mt-6">
-    <Button 
+    {workout?.feedbackId ? (
+      <NextWorkout 
+        program={program}
+        setCurrentWorkout={setCurrentWorkout}
+        handleSubmit={handleSubmit}
+        workout={workout}
+      />
+    ) : isWorkoutComplete && (
+      <>
+      <Button 
         type="button"
         text="Submit"
         onClick={() => setFormShown(true)}
-    />
-    </div>
+      />
 
     <ScrollUp modalShown={formShown} setModalShown={setFormShown}>
       <form onSubmit={handleSubmit} className="w-full h-full flex flex-col justify-between">
@@ -178,9 +186,14 @@ export default function FeedbackForm({ program, currentWorkoutState, setCurrentW
           program={program}
           setCurrentWorkout={setCurrentWorkout}
           handleSubmit={handleSubmit}
+          workout={workout}
         />
       </form>
     </ScrollUp>
+
+    </>
+    )}
+    </div>
     </>
   );
 }

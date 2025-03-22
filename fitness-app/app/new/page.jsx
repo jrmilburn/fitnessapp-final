@@ -18,6 +18,7 @@ export default function NewPage() {
         days: 2,
     });
     const [weekLayout, setWeekLayout] = useState(null);
+    const [autoRegulated, setAutoRegulated] = useState(false);
 
     const loadLayout = (e) => {
         e.preventDefault();
@@ -49,21 +50,41 @@ export default function NewPage() {
       
 
       const createProgram = async () => {
-
-        const response = await fetch('/api/new-program', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                weekLayout,
-                programStructure
-            })
-        })
-
-        if(response.ok) {
-            router.push('/workout')
+        // Compute the final layout based on autoRegulated flag
+        let finalWeekLayout = weekLayout;
+        if (autoRegulated && weekLayout && weekLayout.length > 0) {
+          const currentWeek = weekLayout.find(week => week.weekNo === 1);
+          if (currentWeek) {
+            finalWeekLayout = weekLayout.map((week) => ({
+              ...currentWeek,
+              weekNo: week.weekNo, // keep each week's original number
+              workouts: currentWeek.workouts.map((workout) => ({
+                ...workout,
+                // Deep clone exercises to avoid shared references
+                exercises: workout.exercises.map(exercise => ({ ...exercise }))
+              }))
+            }));
+            // Update the state (if you still need to update it for the UI)
+            setWeekLayout(finalWeekLayout);
+          }
         }
-
-      }
+      
+        // Use finalWeekLayout in your fetch call
+        const response = await fetch('/api/new-program', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            weekLayout: finalWeekLayout,
+            programStructure,
+            autoRegulated
+          })
+        });
+      
+        if (response.ok) {
+          router.push('/workout');
+        }
+      };
+      
       
 
     return (
@@ -73,10 +94,13 @@ export default function NewPage() {
                     programStructure={programStructure}
                     setProgramStructure={setProgramStructure}
                     loadLayout={loadLayout}
+                    autoRegulated={autoRegulated}
+                    setAutoRegulated={setAutoRegulated}
                 />
                 <WeekLayout 
                     weekLayout={weekLayout}
                     setWeekLayout={setWeekLayout}
+                    autoRegulated={autoRegulated}
                 />
 
                 <Button 

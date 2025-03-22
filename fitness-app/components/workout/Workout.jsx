@@ -17,17 +17,21 @@ export default function Workout({ workout, setProgram, program, setCurrentWorkou
               exercise={exercise}
               setProgram={setProgram}
               program={program}
+              workout={workout}
             />
           </div>
         );
       })}
 
+      {workout?.programmed && (
         <FeedbackForm 
           program={program}
           setCurrentWorkout={setCurrentWorkout}
           workout={workout}
           setProgram={setProgram}
         />
+      )}
+
     </div>
   );
 }

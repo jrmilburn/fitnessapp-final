@@ -79,9 +79,12 @@ async function UpdateVolume(workoutId, userFatigue) {
         }
     })
 
-    const nextWorkout = await prisma.workout.findUnique({
+    const nextWorkout = await prisma.workout.update({
         where: {
             id: currentWorkout.nextWorkoutId
+        },
+        data: {
+            programmed: true
         }
     })
 
@@ -106,7 +109,14 @@ async function UpdateVolume(workoutId, userFatigue) {
         }
     })
 
-    console.log(feedback);
+    await prisma.workout.update({
+        where: {
+            id: workoutId
+        },
+        data: {
+            feedbackId: feedback[0].id
+        }
+    })
 
     for (let i = 0; i < nextExercises.length; i++) {
 
@@ -124,8 +134,6 @@ async function UpdateVolume(workoutId, userFatigue) {
                 }
             })
 
-            console.log(newSet);
-
         }
 
 
@@ -139,21 +147,10 @@ async function UpdateVolume(workoutId, userFatigue) {
 
 function CalculateSets(currentSetCount, workload, jointpain, soreness, fatigue) {
 
-    console.log(currentSetCount);
-    console.log(workload);
-    console.log(jointpain);
-    console.log(soreness);
-    console.log(fatigue);
-
     const normalisedWorkload  = -0.08 * workload  + 1.2;
     const normalisedJointPain = -0.08 * jointpain + 1.2;
     const normalisedSoreness  = -0.08 * soreness  + 1.2;
     const normalisedFatigue   = -0.08 * fatigue   + 1.2;
-
-    console.log(normalisedWorkload);
-    console.log(normalisedJointPain);
-    console.log(normalisedSoreness);
-    console.log(normalisedFatigue);
   
     const volumeFactor = normalisedWorkload * normalisedJointPain * normalisedSoreness * normalisedFatigue;
     
