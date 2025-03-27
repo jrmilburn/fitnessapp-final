@@ -17,8 +17,17 @@ export default function WorkoutPage() {
         fetch('/api/program')
         .then(response => response.json())
         .then(data => {
+
+            const nextWorkoutWithIncompleteSet = data?.weeks
+            .flatMap(week => week.workouts)
+            .find(workout =>
+              workout.exercises.some(exercise =>
+                exercise.sets.some(set => !set.complete)
+              )
+            );
+
             setProgram(data)
-            setCurrentWorkout(data?.weeks[0]?.workouts[0]);
+            setCurrentWorkout(nextWorkoutWithIncompleteSet);
             console.log(data);
         })
     }, [])
