@@ -64,7 +64,7 @@ import WeekLayout from './WeekStructure';
         newWeekLayout[weekNo] = {
           ...newWeekLayout[weekNo],
           workouts: newWeekLayout[weekNo].workouts.map((w) =>
-            w.id === workout.id ? { ...w, name: newName } : w
+            w.workoutNo === workout.workoutNo ? { ...w, name: newName } : w
           ),
         };
         return newWeekLayout;
@@ -127,12 +127,12 @@ import WeekLayout from './WeekStructure';
   
     return (
       <>
-        <div className="h-full min-w-[250px] bg-[var(--secondary-bg)] overflow-x-hidden flex flex-col gap-2">
+        <div className="h-full min-w-[250px] bg-[var(--primary-bg)] overflow-x-hidden flex flex-col gap-2 shadow-md p-2 rounded-lg border border-[black]/5">
             
           <input
             value={workout.name}
             onChange={updateWorkoutName}
-            className="border border-black/10 p-1"
+            className="border border-black/5 p-2 shadow-md rounded-lg outline-none"
           />
   
           <DndContext 
@@ -173,7 +173,7 @@ import WeekLayout from './WeekStructure';
             </DragOverlay>
           </DndContext>
   
-          <button className="w-full bg-[var(--primary-bg)]" onClick={toggleModal}>
+          <button className="w-full bg-[var(--primary-bg)] py-1 cursor-pointer shadow-md border border-[black]/5 rounded-lg" onClick={toggleModal}>
             Add New +
           </button>
         </div>

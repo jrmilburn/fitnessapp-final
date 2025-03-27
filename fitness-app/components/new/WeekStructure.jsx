@@ -47,10 +47,11 @@ export default function WeekLayout({ weekLayout, setWeekLayout, autoRegulated })
   return (
     <>
       {weekLayout && (
-        <div className="w-full bg-[var(--secondary-bg)] p-4 h-full flex flex-col items-center">
+        <div className="w-full bg-[var(--primary-bg)] p-4 h-full flex flex-col items-center shadow-md rounded-lg border border-[black]/5">
           {/* Render the week selector only if not autoRegulated */}
           {!autoRegulated && (
-            <div className="flex justify-around mb-8 w-full">
+            <div className="flex gap-8 mb-8 w-full justify-center items-center">
+              <div className="flex flex-wrap gap-8 justify-center">
               {weekLayout.map((week, index) => (
                 <div key={index} className="flex gap-2 items-center">
                   <button
@@ -61,20 +62,24 @@ export default function WeekLayout({ weekLayout, setWeekLayout, autoRegulated })
                   >
                     Week {week.weekNo}
                   </button>
-                  <ConfirmationModal
-                    title="Copy Program"
-                    message="Are you sure you want to copy this week's structure to all other weeks? This will overwrite any existing structure"
-                    onConfirm={onConfirm}
-                    onCancel={onCancel}
-                  >
-                    <Image src="/icons/copy.svg" width={28} height={28} alt="copy" />
-                  </ConfirmationModal>
                 </div>
               ))}
+              </div>
+              <div className="w-16 h-16">
+                <ConfirmationModal
+                  title="Copy Program"
+                  message={`Are you sure you want to copy week ${weekNo + 1}'s structure to all other weeks? This will overwrite any existing structure`}
+                  onConfirm={onConfirm}
+                  onCancel={onCancel}
+                >
+                  <Image src="/icons/copy.svg" width={28} height={28} alt="copy" />
+                </ConfirmationModal>
+                </div>
             </div>
           )}
           {/* Render workouts for the currentWeek */}
-          <div className="flex gap-2 overflow-x-auto">
+          <div className="w-full  overflow-x-auto p-4">
+          <div className="flex gap-2">
             {currentWeek?.workouts?.map((workout, index) => (
               <WorkoutStructure
                 key={index + 100}
@@ -86,6 +91,7 @@ export default function WeekLayout({ weekLayout, setWeekLayout, autoRegulated })
                 weekIndex={weekNo}
               />
             ))}
+          </div>
           </div>
         </div>
       )}

@@ -51,16 +51,16 @@ export default function ExerciseStructure({
       <p className="opacity-[0.5]">{exercise.muscle}</p>
       
       {!autoRegulated && (
-        <div className="w-full flex items-center gap-4">
+        <div className="w-full flex items-center gap-4 justify-between">
           <div>Sets: {setCount}</div>
-          <div className="flex flex-col items-center gap-1">
+          <div className="flex items-center gap-2">
             <button 
-              className="bg-[var(--accent)] text-white p-2 w-8 cursor-pointer" 
+              className="bg-[var(--accent)] text-white px-2 py-1 w-8 cursor-pointer rounded-lg" 
               onClick={incrementSets}
             >
               +
             </button>
-            <button className="bg-[var(--accent)] text-white p-2 w-8 cursor-pointer">
+            <button className="bg-[var(--accent)] text-white px-2 py-1 w-8 cursor-pointer rounded-lg">
               -
             </button>
           </div>
