@@ -6,6 +6,9 @@ import ScrollUp from "../library/ScrollUp"
 
 export default function Exercise({ exercise, setProgram, program, workout }) {
 
+  //State used for tracking the users first input
+  const [firstInput, setFirstInput] = useState(false);
+
   const currentExercise = program?.weeks
     .flatMap(week => week.workouts)
     .flatMap(workout => workout.exercises)
@@ -26,7 +29,7 @@ export default function Exercise({ exercise, setProgram, program, workout }) {
 
   return (
     <>
-    <div className={`bg-[var(--secondary-bg)] p-4 w-full border-2 ${(isExerciseComplete && workout.programmed) ? 'border-[var(--accent)]' : 'border-black/0'}`}>
+    <div className={`bg-[var(--primary-bg)] p-4 w-full border-2 ${(isExerciseComplete && workout.programmed) ? 'border-[var(--accent)]' : 'border-black/0'}`}>
       <div className="flex justify-between">
       <div className="relative">
         <h6>{exercise?.name}</h6>

@@ -20,8 +20,8 @@ export default function Set({ set, setProgram }) {
     }
 
     useEffect(() => {
-        const targetSetId = set.id;
-      
+        const targetSetId = set.id;      
+
         setProgram(prevProgram => ({
           ...prevProgram,
           weeks: prevProgram.weeks.map(week => ({
@@ -31,9 +31,12 @@ export default function Set({ set, setProgram }) {
               exercises: workout.exercises.map(exercise => ({
                 ...exercise,
                 sets: exercise.sets.map(s =>
+
+
                   s.id === targetSetId
                     ? { ...s, complete: confirmed, weight: weight, reps: reps }
                     : s
+
                 )
               }))
             }))
@@ -65,7 +68,7 @@ export default function Set({ set, setProgram }) {
 
     return (
       <>
-        <div className="flex gap-2 w-full items-center">
+        <div className="flex gap-4 w-full items-center">
             <button onClick={toggleModal} className="w-12 cursor-pointer">
               <Image 
                 src="/icons/vert-dots.svg"
@@ -75,14 +78,20 @@ export default function Set({ set, setProgram }) {
                 className="w-full h-full"
               />
             </button>
+            <div className="w-full border-b border-[black]/10 overflow-hidden flex">
             <Input 
                 inputVal={weight}
                 setInputVal={setWeight}
+                placeholder="Weight"
             />
+            </div>
+            <div className="w-full border-b border-[black]/10 overflow-hidden flex">
             <Input 
                 inputVal={reps}
                 setInputVal={setReps}
+                placeholder="Reps"
             />
+            </div>
             <AnimatedCheckbox 
                 checked={confirmed}
                 onChange={() => updateSet()}

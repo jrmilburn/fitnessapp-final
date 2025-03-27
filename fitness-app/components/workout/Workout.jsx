@@ -11,8 +11,9 @@ export default function Workout({ workout, setProgram, program, setCurrentWorkou
         const previousExercise = index > 0 ? workout.exercises[index - 1] : null;
         // If it's the first exercise or the previous exercise has a different muscle, apply a top margin.
         const marginTop = !previousExercise || previousExercise.muscle !== exercise.muscle ? '1rem' : '0';
+        const borderTop = !previousExercise || previousExercise.muscle !== exercise.muscle
         return (
-          <div key={index} style={{ marginTop }}>
+          <div key={index} style={{ marginTop }} className={`${borderTop ? 'border-t border-[black]/20' : ''}`}>
             <Exercise 
               exercise={exercise}
               setProgram={setProgram}
