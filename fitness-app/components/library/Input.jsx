@@ -1,6 +1,7 @@
 export default function Input({ 
     inputVal, 
     setInputVal, 
+    placeholder
   }) {
   
 
@@ -9,7 +10,8 @@ export default function Input({
       <input 
         value={inputVal}
         onChange={(e) => setInputVal(e.target.value)}
-        className="p-1 bg-[var(--secondary-bg)] w-full border-2 border-black/10"
+        className="p-4 w-full border-none outline-none"
+        placeholder={placeholder}
       />
     );
   }
