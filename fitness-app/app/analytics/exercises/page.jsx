@@ -66,50 +66,48 @@ export default async function ExerciseAnalytics() {
   const sortedMuscles = Object.keys(muscleGroupData).sort();
 
   return (
-    <div className="max-w-[calc(100% - 16rem)] ml-64 min-h-screen flex flex-col gap-4 justify-start items-center p-4 relative">
-      <div className="max-w-2xl mx-auto w-full max-h-screen flex flex-col">
-        <h6 className="mb-8">Weekly Set Volumes</h6>
+    <div className="max-w-[calc(100% - 16rem)] ml-64 min-h-screen flex flex-col gap-4 justify-start items-center p-4">
+      <div className="max-w-2xl w-full flex flex-col gap-4">
+        <h6 className="mb-8 text-center text-xl font-bold">Weekly Set Volumes</h6>
         {sortedMuscles.map((muscle, index) => (
-          <div key={muscle} className="w-full">
-            <BarChart
-              chartData={{
-                labels: weekLabels,
-                datasets: [
-                  {
-                    label: `${muscle} Completed Sets`,
-                    data: muscleGroupData[muscle],
-                    backgroundColor: "rgba(75, 192, 192, 0.6)",
-                    barPercentage: 0.5,         // Adjust this value to make the bars narrower
-                    categoryPercentage: 0.5,      // Adjust this value to further control bar width
-                  },
-                ],
-              }}
-              muscle={muscle}
-              options={{
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                  legend: { display: false },
-                  title: { display: false },
+          <BarChart
+            key={muscle}
+            chartData={{
+              labels: weekLabels,
+              datasets: [
+                {
+                  label: `${muscle} Completed Sets`,
+                  data: muscleGroupData[muscle],
+                  backgroundColor: "rgba(75, 192, 192, 0.6)",
+                  barPercentage: 0.5,
+                  categoryPercentage: 0.5,
                 },
-                scales: {
-                  y: {
-                    min: 0,
-                    suggestedMax: 20,
-                    ticks: {
-                      stepSize: 10,
-                    },
-                  },
-                  x: {
-                    ticks: { display: index === sortedMuscles.length - 1 },
-                    grid: { display: true },
-                  },
+              ],
+            }}
+            muscle={muscle}
+            options={{
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false },
+                title: { display: false },
+              },
+              scales: {
+                y: {
+                  min: 0,
+                  suggestedMax: 10,
+                  ticks: { stepSize: 2 },
                 },
-              }}
-            />
-          </div>
+                x: {
+                  ticks: { display: true },
+                  grid: { display: true },
+                },
+              },
+            }}
+          />
         ))}
       </div>
     </div>
   );
+  
 }

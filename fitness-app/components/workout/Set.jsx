@@ -4,7 +4,7 @@ import AnimatedCheckbox from "../library/Checkbox";
 import Image from "next/image";
 import ScrollUp from "../library/ScrollUp";
 
-export default function Set({ set, setProgram }) {
+export default function Set({ set, setProgram, exerciseId }) {
 
     const [weight, setWeight] = useState(set?.weight || "");
     const [reps, setReps] = useState(set?.reps || "");
@@ -64,6 +64,71 @@ export default function Set({ set, setProgram }) {
         console.log(await response.json());
 
       }
+
+      const removeSet = async () => {
+        const response = await fetch(`/api/set/${set.id}`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+        });
+      
+        if (response.ok) {
+          // Remove the set with set.id from the program state
+          setProgram(prevProgram => ({
+            ...prevProgram,
+            weeks: prevProgram.weeks.map(week => ({
+              ...week,
+              workouts: week.workouts.map(workout => ({
+                ...workout,
+                exercises: workout.exercises.map(exercise => ({
+                  ...exercise,
+                  sets: exercise.sets.filter(s => s.id !== set.id)
+                }))
+              }))
+            }))
+          }));
+        }
+      }
+
+      const addSet = async () => {
+        const response = await fetch('/api/set', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            weight: 0,
+            reps: 0,
+            complete: false,
+            exerciseId: exerciseId
+          })
+        });
+      
+        if (response.ok) {
+          // Assume the API returns the newly created set as JSON.
+          const newSet = await response.json();
+      
+          // Update the program state by finding the exercise with the matching exerciseId
+          // and appending the new set to its sets array.
+          setProgram(prevProgram => ({
+            ...prevProgram,
+            weeks: prevProgram.weeks.map(week => ({
+              ...week,
+              workouts: week.workouts.map(workout => ({
+                ...workout,
+                exercises: workout.exercises.map(exercise => {
+                  if (exercise.id === exerciseId) {
+                    return {
+                      ...exercise,
+                      sets: [...exercise.sets, newSet.set]
+                    };
+                  }
+                  return exercise;
+                })
+              }))
+            }))
+          }));
+        }
+      };
+      
+      
       
 
     return (
@@ -102,7 +167,23 @@ export default function Set({ set, setProgram }) {
           modalShown={modalShown}
           setModalShown={setModalShown}
         >
-
+          <div className="w-full flex flex-col items-center gap-4">
+            <button className="px-4 py-2 bg-[green]/70 text-white rounded-lg cursor-pointer"
+              onClick={() => {
+                addSet();
+                setModalShown(false);
+              }}
+            >
+              Add Set
+            </button>
+            <button className="px-4 py-2 bg-[red]/70 text-white rounded-lg cursor-pointer" 
+              onClick={() => {
+                removeSet();
+                setModalShown(false);
+              }}>
+              Delete Set
+            </button>
+          </div>
         </ScrollUp>
 
       </>

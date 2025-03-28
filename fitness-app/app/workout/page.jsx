@@ -31,6 +31,33 @@ export default function WorkoutPage() {
             console.log(data);
         })
     }, [])
+
+    useEffect(() => {
+        if (program) {
+          let updatedWorkout = null;
+          
+          // If there's already a current workout, try to find its updated version in the program.
+          if (currentWorkout) {
+            updatedWorkout = program.weeks
+              .flatMap(week => week.workouts)
+              .find(workout => workout.id === currentWorkout.id);
+          }
+          
+          // If not found, compute the next workout with an incomplete set.
+          if (!updatedWorkout) {
+            updatedWorkout = program.weeks
+              .flatMap(week => week.workouts)
+              .find(workout =>
+                workout.exercises.some(exercise =>
+                  exercise.sets.some(set => !set.complete)
+                )
+              );
+          }
+          
+          setCurrentWorkout(updatedWorkout);
+        }
+      }, [program, currentWorkout?.id]);
+      
     
 
     return (
