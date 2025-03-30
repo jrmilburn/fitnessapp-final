@@ -132,3 +132,55 @@ export async function POST(request) {
     })
 
 }
+
+export async function DELETE(request) {
+
+  const { exerciseId } = await request.json();
+
+  await prisma.set.deleteMany({
+    where: {
+      exerciseId: exerciseId
+    }
+  })
+
+  const deletedExercise = await prisma.exercise.delete({
+    where: {
+      id: exerciseId
+    },
+    include: {
+      workout: {
+        include: {
+          week: true
+        }
+      }
+    }
+  })
+  
+
+  const newProgram = await prisma.program.findUnique({
+    where: {
+      id: deletedExercise.workout.week.programId
+    },
+    include: {
+      weeks: {
+        include: {
+          workouts: {
+            include: {
+              exercises: {
+                include: {
+                  sets: true
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  })
+
+  return NextResponse.json({
+    message: "Exercise replaced for all remaining workouts",
+    program: newProgram
+  });
+
+}

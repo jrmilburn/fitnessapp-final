@@ -8,7 +8,6 @@ import ExerciseSearch from "../new/ExerciseSearch";
 export default function Exercise({ exercise, setProgram, program, workout }) {
 
   //State used for tracking the users first input
-  const [firstInput, setFirstInput] = useState(false);
   const [editModalShown, setEditModalShown] = useState(false);
 
   const currentExercise = program?.weeks
@@ -44,7 +43,23 @@ export default function Exercise({ exercise, setProgram, program, workout }) {
 
     if(response.ok) {
       const program = await response.json();
-      console.log(program);
+      setProgram(program.program);
+    }
+
+  }
+
+  const removeExercise = async () => {
+
+    const response = await fetch('/api/exercise', {
+      method: 'DELETE',
+      headers: { 'Content-Type' : 'application/json' },
+      body: JSON.stringify({
+        exerciseId: exercise.id
+      })
+    })
+
+    if(response.ok) {
+      const program = await response.json();
       setProgram(program.program);
     }
 
@@ -117,6 +132,7 @@ export default function Exercise({ exercise, setProgram, program, workout }) {
       <button className="px-4 py-2 bg-[red]/70 text-white rounded-lg cursor-pointer" 
         onClick={() => {
           removeExercise();
+          setWorkoutsModalShown(false);
           setEditModalShown(false);
         }}>
         Delete Excercise
@@ -131,7 +147,10 @@ export default function Exercise({ exercise, setProgram, program, workout }) {
           <ExerciseSearch
 
             newExercise={updateAllExercises}
-            setShown={setEditModalShown}
+            setShown={(state) => {
+              setEditModalShown(state);
+              setWorkoutsModalShown(state);
+            }}
 
           />
         </ScrollUp>
