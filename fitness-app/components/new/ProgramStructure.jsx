@@ -4,6 +4,7 @@ import Input from "../library/Input";
 import Image from "next/image";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import AiProgramGenerator from "./AiProgramGenerator";
 
 export default function ProgramStructure({ programStructure, setProgramStructure, loadLayout, autoRegulated, setAutoRegulated }) {
   const autoRegulationInfo = {

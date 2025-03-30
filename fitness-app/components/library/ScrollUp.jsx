@@ -1,9 +1,9 @@
 import Image from "next/image"
 
-export default function ScrollUp({ children, modalShown, setModalShown  }){
+export default function ScrollUp({ children, modalShown, setModalShown, left=true  }){
 
     return (
-        <div className={`gap-2 fixed z-40 top-0 left-[16rem] bg-[var(--primary-bg)] p-4 w-full max-w-[calc(100%-16rem)] min-h-screen transition-all duration-300 ${modalShown ? 'translate-y-[0%]' : 'translate-y-[100%]'}`}>
+        <div className={`gap-2 fixed z-40 top-0 ${left && "left-[16rem]"} ${!left && "top-[4rem]"} bg-[var(--primary-bg)] p-4 w-full max-w-[calc(100%-16rem)] min-h-screen transition-all duration-300 ${modalShown ? 'translate-y-[0%]' : 'translate-y-[100%]'}`}>
             <button className="cursor-pointer w-full border-b flex justify-center mb-8" onClick={() => setModalShown(!modalShown)}>
                 <Image 
                     src="/icons/chevron-right.svg"

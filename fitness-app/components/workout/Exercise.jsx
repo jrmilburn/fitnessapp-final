@@ -9,6 +9,7 @@ export default function Exercise({ exercise, setProgram, program, workout }) {
 
   //State used for tracking the users first input
   const [firstInput, setFirstInput] = useState(false);
+  const [editModalShown, setEditModalShown] = useState(false);
 
   const currentExercise = program?.weeks
     .flatMap(week => week.workouts)
@@ -35,13 +36,16 @@ export default function Exercise({ exercise, setProgram, program, workout }) {
       body: JSON.stringify({
         name: newExercise.name,
         muscle: newExercise.muscle,
-        workoutId: newExercise.id,
-        all: true
+        workoutId: workout.id,
+        all: true,
+        currentName: exercise.name
       })
     })
 
     if(response.ok) {
-
+      const program = await response.json();
+      console.log(program);
+      setProgram(program.program);
     }
 
   }
@@ -105,24 +109,32 @@ export default function Exercise({ exercise, setProgram, program, workout }) {
     <div className="w-full flex flex-col items-center gap-4">
       <button className="px-4 py-2 bg-[green]/70 text-white rounded-lg cursor-pointer"
         onClick={() => {
-          updateAllExercises();
-          setModalShown(false);
+          setEditModalShown(true);
         }}
       >
         Update Exercise
       </button>
       <button className="px-4 py-2 bg-[red]/70 text-white rounded-lg cursor-pointer" 
         onClick={() => {
-          removeSet();
-          setModalShown(false);
+          removeExercise();
+          setEditModalShown(false);
         }}>
         Delete Excercise
       </button>
     </div>
 
-      <ExerciseSearch
+        <ScrollUp
+          modalShown={editModalShown}
+          setModalShown={setEditModalShown}
+          left={false}
+        >
+          <ExerciseSearch
 
-      />
+            newExercise={updateAllExercises}
+            setShown={setEditModalShown}
+
+          />
+        </ScrollUp>
 
     </ScrollUp>
 

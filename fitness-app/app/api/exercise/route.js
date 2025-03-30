@@ -2,14 +2,16 @@ import { NextResponse } from "next/server";
 import { prisma } from "../../../lib/prisma";
 
 export async function PUT(request) {
-  const { name, muscle, workoutId, all } = await request.json();
+  const { name, muscle, workoutId, all, currentName } = await request.json();
+
+  console.log(name, muscle, workoutId, all);
 
   if (all) {
     // Fetch the current workout, including its week info and exercises.
     const workout = await prisma.workout.findUnique({
       where: { id: workoutId },
       include: { 
-        week: true, 
+        week: true,
         exercises: true 
       },
     });
@@ -19,7 +21,10 @@ export async function PUT(request) {
     }
 
     // Identify the exercise in this workout by the provided muscle.
-    const currentExercise = workout.exercises.find(ex => ex.muscle === muscle);
+    const currentExercise = workout.exercises.find(ex => ex.name === currentName);
+
+    console.log(currentExercise);
+
     if (!currentExercise) {
       return NextResponse.json({ error: "Exercise not found in workout" }, { status: 404 });
     }
@@ -46,9 +51,31 @@ export async function PUT(request) {
       },
     });
 
+    const newProgram = await prisma.program.findUnique({
+      where: {
+        id: workout.week.programId
+      },
+      include: {
+        weeks: {
+          include: {
+            workouts: {
+              include: {
+                exercises: {
+                  include: {
+                    sets: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    })
+
     return NextResponse.json({
       message: "Exercise replaced for all remaining workouts",
       count: updateResult.count,
+      program: newProgram
     });
   } else {
     // One-off replacement: just update the exercise in the current workout.
