@@ -65,6 +65,7 @@ export default function WorkoutPage() {
             <div className="max-w-2xl mx-auto w-full flex flex-col">
             <WorkoutHeader 
                 program={program}
+                setProgram={setProgram}
                 currentWorkout={currentWorkout}
                 setCurrentWorkout={setCurrentWorkout}
             />

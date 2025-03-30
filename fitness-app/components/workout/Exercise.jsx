@@ -9,6 +9,7 @@ export default function Exercise({ exercise, setProgram, program, workout }) {
 
   //State used for tracking the users first input
   const [editModalShown, setEditModalShown] = useState(false);
+  const [updateAll, setUpdateAll] = useState(false);
 
   const currentExercise = program?.weeks
     .flatMap(week => week.workouts)
@@ -27,7 +28,7 @@ export default function Exercise({ exercise, setProgram, program, workout }) {
 
   }
 
-  const updateAllExercises = async (newExercise) => {
+  const updateExercises = async (newExercise) => {
 
     const response = await fetch('/api/exercise', {
       method: 'PUT',
@@ -36,7 +37,7 @@ export default function Exercise({ exercise, setProgram, program, workout }) {
         name: newExercise.name,
         muscle: newExercise.muscle,
         workoutId: workout.id,
-        all: true,
+        all: updateAll,
         currentName: exercise.name
       })
     })
@@ -124,10 +125,19 @@ export default function Exercise({ exercise, setProgram, program, workout }) {
     <div className="w-full flex flex-col items-center gap-4">
       <button className="px-4 py-2 bg-[green]/70 text-white rounded-lg cursor-pointer"
         onClick={() => {
+          setUpdateAll(true);
           setEditModalShown(true);
         }}
       >
-        Update Exercise
+        Update All Upcoming Exercises
+      </button>
+      <button className="px-4 py-2 bg-[green]/70 text-white rounded-lg cursor-pointer"
+        onClick={() => {
+          setUpdateAll(false);
+          setEditModalShown(true);
+        }}
+      >
+        Update Just This Exercise
       </button>
       <button className="px-4 py-2 bg-[red]/70 text-white rounded-lg cursor-pointer" 
         onClick={() => {
@@ -146,7 +156,7 @@ export default function Exercise({ exercise, setProgram, program, workout }) {
         >
           <ExerciseSearch
 
-            newExercise={updateAllExercises}
+            newExercise={updateExercises}
             setShown={(state) => {
               setEditModalShown(state);
               setWorkoutsModalShown(state);
