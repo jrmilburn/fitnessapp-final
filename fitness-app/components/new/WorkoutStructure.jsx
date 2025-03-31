@@ -132,7 +132,7 @@ import WeekLayout from './WeekStructure';
           <input
             value={workout.name}
             onChange={updateWorkoutName}
-            className="border border-black/5 p-2 shadow-md rounded-lg outline-none"
+            className="border border-black/5 p-2 rounded-lg outline-none"
           />
   
           <DndContext 
@@ -173,7 +173,7 @@ import WeekLayout from './WeekStructure';
             </DragOverlay>
           </DndContext>
   
-          <button className="w-full bg-[var(--primary-bg)] py-1 cursor-pointer shadow-md border border-[black]/5 rounded-lg" onClick={toggleModal}>
+          <button className="w-full bg-[var(--primary-bg)] py-1 cursor-pointer border border-[black]/5 rounded-lg" onClick={toggleModal}>
             Add New +
           </button>
         </div>

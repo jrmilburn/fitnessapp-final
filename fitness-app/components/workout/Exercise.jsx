@@ -4,6 +4,7 @@ import Image from "next/image";
 
 import ScrollUp from "../library/ScrollUp"
 import ExerciseSearch from "../new/ExerciseSearch";
+import Info from "../../components/library/Info"
 
 export default function Exercise({ exercise, setProgram, program, workout }) {
 
@@ -123,7 +124,7 @@ export default function Exercise({ exercise, setProgram, program, workout }) {
     >
 
     <div className="w-full flex flex-col items-center gap-4">
-      <button className="px-4 py-2 bg-[green]/70 text-white rounded-lg cursor-pointer"
+      <button className="px-4 py-2 bg-[green]/70 text-white rounded-lg cursor-pointer relative z-20"
         onClick={() => {
           setUpdateAll(true);
           setEditModalShown(true);

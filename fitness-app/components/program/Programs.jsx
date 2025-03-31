@@ -1,6 +1,10 @@
+"use client"
+
+import { useState, useEffect } from 'react'
+
 import Program from "./Program"
 
-export default function Programs({ programs }) {
+export default function Programs({ programs, setPrograms }) {
 
     return (
         <div className="w-full">
@@ -8,6 +12,7 @@ export default function Programs({ programs }) {
                 <Program 
                     key={index}
                     program={program}
+                    setPrograms={setPrograms}
                 />
             ))}
         </div>

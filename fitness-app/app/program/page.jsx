@@ -25,6 +25,7 @@ export default function ProgramPage() {
 
                 <Programs 
                     programs={programs}
+                    setPrograms={setPrograms}
                 />
             </div>
         </div>
