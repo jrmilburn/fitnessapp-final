@@ -2,6 +2,8 @@ import { prisma } from "../../../lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../api/auth/[...nextauth]/route";
 import BarChart from "../../../components/analytics/BarChart";
+// Import redirect from next/navigation
+import { redirect } from "next/navigation";
 
 export default async function ExerciseAnalytics() {
   // Authenticate and load the current user
@@ -38,8 +40,12 @@ export default async function ExerciseAnalytics() {
     },
   });
 
+  // Redirect to '/new' if programData is not available
+  if (!programData) {
+    redirect("/new");
+  }
+
   // Aggregate completed sets for each muscle group per week.
-  // The final structure is: { muscle: [week1Count, week2Count, ...] }
   const muscleGroupData = {};
   const weeks = programData.weeks;
   const totalWeeks = weeks.length;
@@ -69,7 +75,7 @@ export default async function ExerciseAnalytics() {
     <div className="max-w-[calc(100% - 16rem)] ml-64 min-h-screen flex flex-col gap-4 justify-start items-center p-4">
       <div className="max-w-2xl w-full flex flex-col gap-4">
         <h6 className="mb-8 text-center text-xl font-bold">Weekly Set Volumes</h6>
-        {sortedMuscles.map((muscle, index) => (
+        {sortedMuscles.map((muscle) => (
           <BarChart
             key={muscle}
             chartData={{
@@ -109,5 +115,4 @@ export default async function ExerciseAnalytics() {
       </div>
     </div>
   );
-  
 }

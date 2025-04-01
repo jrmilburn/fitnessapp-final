@@ -23,6 +23,7 @@ export default function WorkoutView({ initProgram }) {
                 program={program}
                 currentWorkout={currentWorkout}
                 setCurrentWorkout={setCurrentWorkout}
+                viewonly={true}
             />
             <Workout 
                 workout={currentWorkout}
@@ -30,6 +31,7 @@ export default function WorkoutView({ initProgram }) {
                 program={program}
                 setCurrentWorkout={setCurrentWorkout}
                 currentWorkoutState={currentWorkout}
+                viewonly={true}
             />
             </div>
         </div>

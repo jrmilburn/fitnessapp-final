@@ -4,7 +4,7 @@ import Image from "next/image";
 import ScrollUp from "../library/ScrollUp";
 import ExerciseSearch from "../new/ExerciseSearch";
 
-export default function WorkoutHeader({ program, currentWorkout, setCurrentWorkout, setProgram }) {
+export default function WorkoutHeader({ program, currentWorkout, setCurrentWorkout, setProgram, viewonly }) {
   // Renamed state for clarity
   const [currentWorkoutWeek, setCurrentWorkoutWeek] = useState(null);
   const [headerModalShown, setHeaderModalShown] = useState(false);
@@ -40,7 +40,7 @@ export default function WorkoutHeader({ program, currentWorkout, setCurrentWorko
   }
 
   return (
-    <div className="w-full bg-[var(--secondary-bg)] flex justify-between p-4">
+    <div className="w-full bg-[var(--secondary-bg)] flex justify-between p-4 relative">
       <div className="flex flex-col">
         <h6>
           Week {currentWorkoutWeek?.weekNo}, {currentWorkout?.name}
@@ -53,6 +53,9 @@ export default function WorkoutHeader({ program, currentWorkout, setCurrentWorko
           program={program}
           setCurrentWorkout={setCurrentWorkout}
         />
+        { viewonly ? (
+          <p className="opacity-50 absolute right-5 bottom-1">You cannot edit this workout</p>
+        ) : (
         <button className="cursor-pointer" onClick={() => setHeaderModalShown(true)}>
           <Image 
             width={32}
@@ -61,6 +64,7 @@ export default function WorkoutHeader({ program, currentWorkout, setCurrentWorko
             alt="more"
           />
         </button>
+        )}
       </div>
           <ScrollUp 
             modalShown={headerModalShown}

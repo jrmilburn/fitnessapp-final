@@ -1,7 +1,7 @@
 import Exercise from "./Exercise";
 import FeedbackForm from "./FeedbackForm"
 
-export default function Workout({ workout, setProgram, program, setCurrentWorkout }) {
+export default function Workout({ workout, setProgram, program, setCurrentWorkout, viewonly }) {
   
   return (
     // Removed gap-4 from container class
@@ -19,6 +19,7 @@ export default function Workout({ workout, setProgram, program, setCurrentWorkou
               setProgram={setProgram}
               program={program}
               workout={workout}
+              viewonly={viewonly}
             />
           </div>
         );

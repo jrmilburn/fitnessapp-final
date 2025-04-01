@@ -1,9 +1,12 @@
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 
 export default function Program({ program, setPrograms }) {
   const [showDelete, setShowDelete] = useState(false);
+
+  const router = useRouter();
 
   const deleteProgram = async (e) => {
     e.stopPropagation(); // Prevent navigation on delete
@@ -13,10 +16,17 @@ export default function Program({ program, setPrograms }) {
       body: JSON.stringify({ programId: program.id })
     });
 
+    let data;
+
     if(response.ok) {
-      const data = await response.json();
+      data = await response.json();
       setPrograms(data.programs);
     }
+
+    if(data.programs.length === 0) {
+      router.push('/new');
+    }
+
   };
 
   return (

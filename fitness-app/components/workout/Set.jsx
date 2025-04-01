@@ -4,7 +4,7 @@ import AnimatedCheckbox from "../library/Checkbox";
 import Image from "next/image";
 import ScrollUp from "../library/ScrollUp";
 
-export default function Set({ set, setProgram, exerciseId }) {
+export default function Set({ set, setProgram, exerciseId, viewonly }) {
 
     const [weight, setWeight] = useState(set?.weight || "");
     const [reps, setReps] = useState(set?.reps || "");
@@ -134,20 +134,23 @@ export default function Set({ set, setProgram, exerciseId }) {
     return (
       <>
         <div className="flex gap-4 w-full items-center">
-            <button onClick={toggleModal} className="w-12 cursor-pointer">
-              <Image 
-                src="/icons/vert-dots.svg"
-                width={32}
-                height={32}
-                alt="more"
-                className="w-full h-full"
-              />
-            </button>
+            {!viewonly && (
+              <button onClick={toggleModal} className="w-12 cursor-pointer">
+                <Image 
+                  src="/icons/vert-dots.svg"
+                  width={32}
+                  height={32}
+                  alt="more"
+                  className="w-full h-full"
+                />
+              </button>
+            ) }
             <div className="w-full border-b border-[black]/10 overflow-hidden flex">
             <Input 
                 inputVal={weight}
                 setInputVal={setWeight}
                 placeholder="Weight"
+                disabled={viewonly}
             />
             </div>
             <div className="w-full border-b border-[black]/10 overflow-hidden flex">
@@ -155,12 +158,15 @@ export default function Set({ set, setProgram, exerciseId }) {
                 inputVal={reps}
                 setInputVal={setReps}
                 placeholder="Reps"
+                disabled={viewonly}
             />
             </div>
-            <AnimatedCheckbox 
-                checked={confirmed}
-                onChange={() => updateSet()}
-            />
+            {!viewonly && (
+              <AnimatedCheckbox 
+                  checked={confirmed}
+                  onChange={() => updateSet()}
+              />
+            )}
         </div>
 
         <ScrollUp

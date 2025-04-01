@@ -76,6 +76,7 @@ export default function WorkoutPage() {
           setProgram={setProgram}
           currentWorkout={currentWorkout}
           setCurrentWorkout={setCurrentWorkout}
+          viewonly={false}
         />
       )
         }
@@ -84,6 +85,7 @@ export default function WorkoutPage() {
           setProgram={setProgram}
           program={program}
           setCurrentWorkout={setCurrentWorkout}
+          viewonly={false}
         />
       </div>
     </div>

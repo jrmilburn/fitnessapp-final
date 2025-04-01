@@ -6,7 +6,7 @@ import ScrollUp from "../library/ScrollUp"
 import ExerciseSearch from "../new/ExerciseSearch";
 import Info from "../../components/library/Info"
 
-export default function Exercise({ exercise, setProgram, program, workout }) {
+export default function Exercise({ exercise, setProgram, program, workout, viewonly }) {
 
   //State used for tracking the users first input
   const [editModalShown, setEditModalShown] = useState(false);
@@ -76,7 +76,7 @@ export default function Exercise({ exercise, setProgram, program, workout }) {
         <h6>{exercise?.name}</h6>
         <p className="opacity-[0.5]">{exercise?.muscle}</p>
       </div>
-      {workout.programmed && (
+      {workout.programmed && !viewonly && (
         <button className="cursor-pointer" onClick={toggleModal}>
           <Image 
             src="/icons/hori-dots.svg"
@@ -103,6 +103,7 @@ export default function Exercise({ exercise, setProgram, program, workout }) {
                 set={set}
                 setProgram={setProgram}
                 exerciseId={exercise.id}
+                viewonly={viewonly}
               />
             ))
           }
