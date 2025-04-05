@@ -4,7 +4,7 @@ import Input from "../library/Input";
 import Image from "next/image";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import AiProgramGenerator from "./AiProgramGenerator";
+import { Select, MenuItem, InputLabel, FormControl, TextField } from "@mui/material";
 
 export default function ProgramStructure({ programStructure, setProgramStructure, loadLayout, autoRegulated, setAutoRegulated }) {
   const autoRegulationInfo = {
@@ -34,23 +34,28 @@ export default function ProgramStructure({ programStructure, setProgramStructure
       <motion.form
         layout
         transition={{ duration: 0.1 }}
-        className="shadow-md rounded-xl w-full border border-[black]/5 overflow-hidden"
+        className="shadow-md rounded-xl w-full border border-[black]/5"
       >
         {formProgression >= 0 && (
-          <Input
+          <TextField
             inputVal={programStructure.name}
             setInputVal={(val) =>
               setProgramStructure((prev) => ({ ...prev, name: val }))
             }
             placeholder="Choose a name..."
+            className="w-full p-2"
           />
         )}
 
         {formProgression >= 1 && (
-          <div className="flex flex-col w-full relative">
-            <select
-              name="days"
-              className="w-full p-4 border-b border-black/5 appearance-none outline-none"
+          <div className="flex flex-col w-full relative my-2">
+            <FormControl>
+            <InputLabel id="days-label">Days</InputLabel>
+            <Select
+              labelId="days-label"
+              id="days-select"
+              label="Days"
+              className="w-full"
               value={programStructure.days}
               onChange={(e) =>
                 setProgramStructure((prev) => ({
@@ -59,31 +64,26 @@ export default function ProgramStructure({ programStructure, setProgramStructure
                 }))
               }
             >
-              <option value={1}>1 / week</option>
-              <option value={2}>2 / week</option>
-              <option value={3}>3 / week</option>
-              <option value={4}>4 / week</option>
-              <option value={5}>5 / week</option>
-              <option value={6}>6 / week</option>
-            </select>
-
-            <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center pr-3">
-              <Image
-                src="/icons/chevron-right.svg"
-                height={24}
-                width={24}
-                alt="next button"
-                className="rotate-[90deg]"
-              />
-            </div>
+              <MenuItem value={1}>1 / week</MenuItem>
+              <MenuItem value={2}>2 / week</MenuItem>
+              <MenuItem value={3}>3 / week</MenuItem>
+              <MenuItem value={4}>4 / week</MenuItem>
+              <MenuItem value={5}>5 / week</MenuItem>
+              <MenuItem value={6}>6 / week</MenuItem>
+            </Select>
+            </FormControl>
           </div>
         )}
 
         {formProgression >= 2 && (
-          <div className="flex flex-col w-full relative">
-            <select
-              name="length"
-              className="w-full p-4 border-b border-black/5 appearance-none outline-none"
+          <div className="flex flex-col w-full relative my-2">
+            <FormControl>
+            <InputLabel id="weeks-label">Weeks</InputLabel>
+            <Select
+              labelId="weeks-label"
+              id="weeks-select"
+              label="Weeks"
+              className="w-full"
               value={programStructure.length}
               onChange={(e) =>
                 setProgramStructure((prev) => ({
@@ -92,23 +92,14 @@ export default function ProgramStructure({ programStructure, setProgramStructure
                 }))
               }
             >
-              <option value={3}>3 weeks</option>
-              <option value={4}>4 weeks</option>
-              <option value={5}>5 weeks</option>
-              <option value={6}>6 weeks</option>
-              <option value={7}>7 weeks</option>
-              <option value={8}>8 weeks</option>
-            </select>
-
-            <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center pr-3">
-              <Image
-                src="/icons/chevron-right.svg"
-                height={24}
-                width={24}
-                alt="next button"
-                className="rotate-[90deg]"
-              />
-            </div>
+              <MenuItem value={3}>3 weeks</MenuItem>
+              <MenuItem value={4}>4 weeks</MenuItem>
+              <MenuItem value={5}>5 weeks</MenuItem>
+              <MenuItem value={6}>6 weeks</MenuItem>
+              <MenuItem value={7}>7 weeks</MenuItem>
+              <MenuItem value={8}>8 weeks</MenuItem>
+            </Select>
+            </FormControl>
           </div>
         )}
 

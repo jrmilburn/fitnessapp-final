@@ -1,8 +1,12 @@
 import Input from "../library/Input"
 import { useState, useEffect } from "react"
-import AnimatedCheckbox from "../library/Checkbox";
+import Checkbox from '@mui/material/Checkbox';
+import { TextField } from "@mui/material";
 import Image from "next/image";
 import ScrollUp from "../library/ScrollUp";
+import AppTheme from "../../theme/AppTheme";
+
+const label = { inputProps: { 'aria-label': 'Checkbox demo' } };
 
 export default function Set({ set, setProgram, exerciseId, viewonly }) {
 
@@ -145,28 +149,36 @@ export default function Set({ set, setProgram, exerciseId, viewonly }) {
                 />
               </button>
             ) }
-            <div className="w-full border-b border-[black]/10 overflow-hidden flex">
-            <Input 
-                inputVal={weight}
-                setInputVal={setWeight}
-                placeholder="Weight"
-                disabled={viewonly}
+            <AppTheme>
+            <div className="w-full flex">
+            <TextField 
+              value={weight}
+              onChange={(e) => setWeight(e.target.value)}
+              disabled={viewonly}
+              placeholder="Weight"
+              className="w-full"
+              type="number"
             />
             </div>
-            <div className="w-full border-b border-[black]/10 overflow-hidden flex">
-            <Input 
-                inputVal={reps}
-                setInputVal={setReps}
-                placeholder="Reps"
-                disabled={viewonly}
+            <div className="w-full flex">
+            <TextField 
+              value={reps}
+              onChange={(e) => setReps(e.target.value)}
+              disabled={viewonly}
+              placeholder="Weight"
+              className="w-full"
+              type="number"
             />
             </div>
             {!viewonly && (
-              <AnimatedCheckbox 
-                  checked={confirmed}
-                  onChange={() => updateSet()}
+              <Checkbox 
+                {...label}
+                {...(confirmed ? { checked: true } : {})}
+                onClick={() => updateSet()}
               />
             )}
+          </AppTheme>
+
         </div>
 
         <ScrollUp

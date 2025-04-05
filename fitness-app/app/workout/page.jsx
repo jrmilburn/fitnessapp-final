@@ -33,7 +33,6 @@ export default function WorkoutPage() {
 
         setProgram(data);
         setCurrentWorkout(nextWorkoutWithIncompleteSet);
-        console.log(data);
       })
       .catch((error) => {
         console.error("Error fetching program:", error);
