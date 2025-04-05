@@ -1,4 +1,4 @@
-import Button from "../library/Button"
+import Button from '@mui/material/Button';
 import { useSession, signOut } from "next-auth/react"
 import SidebarLinks from "./SidebarLinks"
 
@@ -11,12 +11,12 @@ export default function Navbar() {
 
                 <SidebarLinks />
             </div>
-
             <Button 
-                type="button"
-                text="Sign Out"
-                onClick={signOut}
-            />
+                variant="contained"
+                onClick={signOut}>
+                Sign Out
+            </Button>
+            
         </div>
     )
 

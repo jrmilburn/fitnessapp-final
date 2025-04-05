@@ -37,6 +37,7 @@ export default function WorkoutPage() {
       })
       .catch((error) => {
         console.error("Error fetching program:", error);
+        router.push('/new');
       });
   }, [router]);
 

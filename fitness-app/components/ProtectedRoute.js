@@ -44,18 +44,14 @@ export default function ProtectedRoute({ children }) {
     return () => clearTimeout(timer);
   }, [status]);
 
-  if (status === "authenticated") {
-    // Render the protected content if authenticated or if the path is unprotected
+  if(isUnprotectedPath) {
+    return <>{children}</>
+
+  } else if (status === "authenticated") {
     return (
       <>
         <Navbar />
         {children}
       </>)
-    ;
-  } else if (isUnprotectedPath) {
-    return <>{children}</>
   }
-
-  // Optionally, render nothing or a fallback UI while redirecting
-  return null;
 }

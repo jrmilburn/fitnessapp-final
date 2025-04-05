@@ -2,6 +2,7 @@ import { ArrowLongRightIcon } from '@heroicons/react/24/solid';
 
 export default function Button({ type, text, onClick }) {
     return (
+      <>
       <button
         type={type}
         className="w-full max-w-60
@@ -17,6 +18,7 @@ export default function Button({ type, text, onClick }) {
                                     group-hover:translate-x-1
                                     transition-all duration-300" />
       </button>
+      </>
     );
   }
   
