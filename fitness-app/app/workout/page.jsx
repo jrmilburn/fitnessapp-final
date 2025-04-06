@@ -67,7 +67,7 @@ export default function WorkoutPage() {
   }, [program, currentWorkout?.id]);
 
   return (
-    <div className="max-w-[calc(100% - 16rem)] ml-64 min-h-screen flex flex-col gap-4 justify-start items-center p-4 relative">
+    <div className="w-full min-h-screen flex flex-col gap-4 justify-start items-center p-4 relative">
       <div className="max-w-2xl mx-auto w-full flex flex-col">
         { program && 
         (

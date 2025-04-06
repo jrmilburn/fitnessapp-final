@@ -20,7 +20,6 @@ export default function RootLayout({ children }) {
         className={`antialiased w-full h-full`}
       >
         <ProtectedRoute>
-          {/**Navbar only on protected routes */}
           {children}
         </ProtectedRoute>
 

@@ -22,7 +22,7 @@ export default function ProgramStructure({ programStructure, setProgramStructure
   };
 
   return (
-    <div className={`max-w-xl w-full mx-auto ${layoutLoaded ? '' : 'min-h-screen'} flex flex-col gap-4 justify-center items-center`}>
+    <div className={`max-w-xl w-full mx-auto flex flex-col gap-4 justify-center items-center`}>
       <h5 className="font-bold">
         {formProgression === 0 ? 'Name your program' :
         formProgression === 1 ? 'Select a weekly frequency' :
@@ -38,9 +38,9 @@ export default function ProgramStructure({ programStructure, setProgramStructure
       >
         {formProgression >= 0 && (
           <TextField
-            inputVal={programStructure.name}
-            setInputVal={(val) =>
-              setProgramStructure((prev) => ({ ...prev, name: val }))
+            value={programStructure.name}
+            onChange={(e) =>
+              setProgramStructure((prev) => ({ ...prev, name: e.target.value }))
             }
             placeholder="Choose a name..."
             className="w-full p-2"

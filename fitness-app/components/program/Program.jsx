@@ -3,6 +3,10 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 
+import DeleteIcon from '@mui/icons-material/Delete';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+
 export default function Program({ program, setPrograms }) {
   const [showDelete, setShowDelete] = useState(false);
 
@@ -43,31 +47,26 @@ export default function Program({ program, setPrograms }) {
           </p>
         </div>
       </Link>
-      <div className="flex items-center">
+      <div className="flex items-center gap-4">
         {/* Delete button fades in on hover */}
-        <button 
-          onClick={deleteProgram} 
-          className={`transition-all cursor-pointer duration-300 mr-2 p-1 text-red-600 ${showDelete ? "opacity-100" : "opacity-0 pointer-events-none"}`}
-          aria-label="Delete Program"
-        >
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            fill="none" 
-            viewBox="0 0 24 24" 
-            strokeWidth={2} 
-            stroke="currentColor" 
-            className="w-6 h-6"
+        <Tooltip title="Delete">
+          <IconButton
+            onClick={deleteProgram}
+            style={{ opacity: showDelete ? 1 : 0, transition: "opacity 200ms ease-in-out" }}
           >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m2 0H7" />
-          </svg>
-        </button>
+            <DeleteIcon />
+          </IconButton>
+        </Tooltip>
+
+        <Tooltip title="View">
         <Image 
           src="/icons/chevron-right.svg"
           width={32}
           height={32}
           alt="chevron"
-          className="opacity-[0.5] transition-all duration-300"
+          className="opacity-[0.5] transition-all duration-300 cursor-pointer"
         />
+        </Tooltip>
       </div>
     </div>
   );

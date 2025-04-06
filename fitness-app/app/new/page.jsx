@@ -88,8 +88,8 @@ export default function NewPage() {
       
 
     return (
-        <div className="flex gap-2 max-w-[calc(100% - 16rem)] ml-64 min-h-screen p-4">
-            <div className="max-w-[90%] mx-auto w-full h-full flex flex-col gap-4">
+        <div className="flex gap-2 p-4">
+            <div className="w-full h-full flex flex-col gap-4">
                 <ProgramStructure 
                     programStructure={programStructure}
                     setProgramStructure={setProgramStructure}
@@ -102,12 +102,13 @@ export default function NewPage() {
                     setWeekLayout={setWeekLayout}
                     autoRegulated={autoRegulated}
                 />
-
+                <div className="mx-auto w-48">
                 <Button 
                     type="button"
                     text="Create"
                     onClick={createProgram}
                 />
+                </div>
             </div>
         </div>
     )

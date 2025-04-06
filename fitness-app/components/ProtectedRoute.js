@@ -7,6 +7,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from 'next/image';
 import Navbar from "./navbar/Navbar";
+import Navbar2 from "./navbar/Navbar2"
 
 export default function ProtectedRoute({ children }) {
   const { status } = useSession();
@@ -50,8 +51,9 @@ export default function ProtectedRoute({ children }) {
   } else if (status === "authenticated") {
     return (
       <>
-        <Navbar />
-        {children}
+        <Navbar2>
+          {children}
+        </Navbar2>
       </>)
   }
 }
