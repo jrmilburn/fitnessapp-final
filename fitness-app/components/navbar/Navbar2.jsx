@@ -22,11 +22,11 @@ const NAVIGATION = [
   { kind: 'divider' },
   { kind: 'header', title: 'Analytics' },
   {
-    segment: 'volume',
-    title: 'Volume',
+    segment: 'analytics',
+    title: 'Analytics',
     icon: <BarChartIcon />,
     children: [
-      { segment: 'sales', title: 'Sales', icon: <DescriptionIcon /> },
+      { segment: 'volume', title: 'Volume', icon: <DescriptionIcon /> },
       { segment: 'traffic', title: 'Traffic', icon: <DescriptionIcon /> },
     ],
   },

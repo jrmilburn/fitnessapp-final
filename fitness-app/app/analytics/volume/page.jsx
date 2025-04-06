@@ -72,7 +72,7 @@ export default async function ExerciseAnalytics() {
   const sortedMuscles = Object.keys(muscleGroupData).sort();
 
   return (
-    <div className="max-w-[calc(100% - 16rem)] ml-64 min-h-screen flex flex-col gap-4 justify-start items-center p-4">
+    <div className="flex flex-col gap-4 justify-start items-center p-4">
       <div className="max-w-2xl w-full flex flex-col gap-4">
         <h6 className="mb-8 text-center text-xl font-bold">Weekly Set Volumes</h6>
         {sortedMuscles.map((muscle) => (
