@@ -315,3 +315,24 @@ export async function DELETE(request) {
   });
 
 }
+
+export async function GET() {
+  try {
+    const exercises = await prisma.exercise.findMany({
+      distinct: ['name'], // Adjust the field name(s) as needed
+    });
+
+    return new Response(JSON.stringify(exercises), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (error) {
+    return new Response(
+      JSON.stringify({ error: error.message || 'Error fetching exercises' }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+  }
+}

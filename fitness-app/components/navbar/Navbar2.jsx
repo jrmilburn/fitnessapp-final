@@ -4,9 +4,10 @@ import * as React from 'react';
 import PropTypes from 'prop-types';
 import { createTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import { PlusCircleIcon } from '@heroicons/react/24/solid';
+import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
+import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import ListAltIcon from '@mui/icons-material/ListAlt';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import DescriptionIcon from '@mui/icons-material/Description';
 import LayersIcon from '@mui/icons-material/Layers';
@@ -16,9 +17,10 @@ import { useRouter, usePathname } from 'next/navigation';
 
 const NAVIGATION = [
   { kind: 'header', title: 'Main items' },
-  { segment: 'workout', title: 'Workout', icon: <DashboardIcon /> },
-  { segment: 'program', title: 'Programmes', icon: <ShoppingCartIcon /> },
-  {segment: 'new', title: 'New', icon: <PlusCircleIcon />},
+  { segment: 'workout', title: 'Workout', icon: <FitnessCenterIcon /> },
+  { segment: 'program', title: 'Programmes', icon: <LibraryBooksIcon /> },
+  { segment: 'new', title: 'New Program', icon: <AddCircleIcon /> },
+  { segment: 'exercises', title: 'Exercises', icon: <ListAltIcon /> },
   { kind: 'divider' },
   { kind: 'header', title: 'Analytics' },
   {
@@ -70,8 +72,14 @@ function DashboardLayoutBasic({ window, children }) {
       router={customRouter}
       theme={demoTheme}
       window={demoWindow}
+      branding={{
+        logo: '',
+        title: 'JFit',
+        homeUrl: '/workout',
+      }}
     >
-      <DashboardLayout>
+      <DashboardLayout
+      >
         {/* Outer Box ensures the layout uses full viewport height and prevents overflow */}
         <Box
           sx={{
