@@ -72,46 +72,11 @@ export default async function ExerciseAnalytics() {
   const sortedMuscles = Object.keys(muscleGroupData).sort();
 
   return (
-    <div className="flex flex-col gap-4 justify-start items-center p-4">
-      <div className="max-w-2xl w-full flex flex-col gap-4">
-        <h6 className="mb-8 text-center text-xl font-bold">Weekly Set Volumes</h6>
-        {sortedMuscles.map((muscle) => (
+    <div className="flex flex-col justify-center items-center p-4">
+      <div className="w-full flex flex-col justify-center items-center">
           <BarChart
-            key={muscle}
-            chartData={{
-              labels: weekLabels,
-              datasets: [
-                {
-                  label: `${muscle} Completed Sets`,
-                  data: muscleGroupData[muscle],
-                  backgroundColor: "rgba(75, 192, 192, 0.6)",
-                  barPercentage: 0.5,
-                  categoryPercentage: 0.5,
-                },
-              ],
-            }}
-            muscle={muscle}
-            options={{
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: { display: false },
-                title: { display: false },
-              },
-              scales: {
-                y: {
-                  min: 0,
-                  suggestedMax: 10,
-                  ticks: { stepSize: 2 },
-                },
-                x: {
-                  ticks: { display: true },
-                  grid: { display: true },
-                },
-              },
-            }}
+            chartData={muscleGroupData}
           />
-        ))}
       </div>
     </div>
   );

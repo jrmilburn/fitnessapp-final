@@ -19,7 +19,6 @@ const NAVIGATION = [
   { kind: 'header', title: 'Main items' },
   { segment: 'workout', title: 'Workout', icon: <FitnessCenterIcon /> },
   { segment: 'program', title: 'Programmes', icon: <LibraryBooksIcon /> },
-  { segment: 'new', title: 'New Program', icon: <AddCircleIcon /> },
   { segment: 'exercises', title: 'Exercises', icon: <ListAltIcon /> },
   { kind: 'divider' },
   { kind: 'header', title: 'Analytics' },

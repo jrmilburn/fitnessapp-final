@@ -1,40 +1,66 @@
-"use client";
-import { Bar } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-} from "chart.js";
+"use client"
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+import * as React from 'react';
+import { useRef, useState, useEffect } from 'react';
+import { BarChart } from '@mui/x-charts/BarChart';
+import { axisClasses } from '@mui/x-charts/ChartsAxis';
 
-export default function BarChart({ chartData, options, muscle }) {
-  const defaultOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { display: false },
-      title: { display: false },
-    },
-    scales: {
-      y: {
-        min: 0,
-        suggestedMax: 20,
-        ticks: { stepSize: 10 },
-      },
-    },
-  };
+export default function AnalyticsBarChart({ chartData }) {
+  const containerRef = useRef(null);
+  const [dimensions, setDimensions] = useState({ width: 500, height: 300 });
+
+  // Update dimensions when container size changes
+  useEffect(() => {
+    const updateDimensions = () => {
+      if (containerRef.current) {
+        setDimensions({
+          width: containerRef.current.offsetWidth,
+          height: containerRef.current.offsetHeight,
+        });
+      }
+    };
+    
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    return () => window.removeEventListener('resize', updateDimensions);
+  }, []);
+
+  // Assume chartData is in the format: { "Chest": [0,0,0,0], "Back": [1,2,3,4], ... }
+  const muscleGroups = Object.keys(chartData);
+  const weeksCount = chartData[muscleGroups[0]].length;
+  const weeks = Array.from({ length: weeksCount }, (_, i) => `Week ${i + 1}`);
+
+  // Transform the data so that each object represents a week
+  const dataset = weeks.map((weekLabel, index) => {
+    const weekData = { week: weekLabel };
+    muscleGroups.forEach((muscle) => {
+      weekData[muscle] = chartData[muscle][index];
+    });
+    return weekData;
+  });
+
+  const series = muscleGroups.map((muscle) => ({
+    dataKey: muscle,
+    label: muscle,
+  }));
 
   return (
-    <div className="flex flex-col bg-white p-4 shadow-md rounded-lg border border-[black]/5">
-      <h6 className="mb-2 text-center font-bold">{muscle}</h6>
-      <div className="relative h-48">
-        <Bar data={chartData} options={options || defaultOptions} />
-      </div>
+    <div 
+      ref={containerRef} 
+      style={{ width: '100%', height: '100%', minHeight: 300 }}
+    >
+      <BarChart
+        dataset={dataset}
+        xAxis={[{ scaleType: 'band', dataKey: 'week' }]}
+        series={series}
+        yAxis={[{ label: 'Set Volume' }]}
+        width={dimensions.width}
+        height={dimensions.height}
+        sx={{
+          [`.${axisClasses.left} .${axisClasses.label}`]: {
+          },
+        }}
+      />
     </div>
   );
 }
