@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import ScrollUp from "../library/ScrollUp";
+import ScrollUp from "../../library/ScrollUp";
 
 export default function ExerciseSearch({ newExercise, setShown }) {
   const [exercises, setExercises] = useState([]);

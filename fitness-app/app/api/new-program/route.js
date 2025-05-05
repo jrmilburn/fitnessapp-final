@@ -13,6 +13,8 @@ export async function POST(request) {
         }
     })
 
+    console.log(session);
+
     const { weekLayout, programStructure, autoRegulated } = await request.json();
 
     const newProgram = await CreateProgram(user.id, weekLayout, programStructure, autoRegulated);

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import ChangeWorkout from "./ChangeWorkout";
 import Image from "next/image";
 import ScrollUp from "../library/ScrollUp";
-import ExerciseSearch from "../new/ExerciseSearch";
+import ExerciseSearch from "../new/ss/ExerciseSearch";
 
 export default function WorkoutHeader({ program, currentWorkout, setCurrentWorkout, setProgram, viewonly }) {
   // Renamed state for clarity

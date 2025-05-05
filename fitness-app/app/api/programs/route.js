@@ -18,6 +18,21 @@ export async function GET() {
     const program = await prisma.program.findMany({
         where: {
             userId: user.id
+        },
+        include: {
+            weeks: {
+                include: {
+                    workouts: {
+                        include: {
+                            exercises: {
+                                include: {
+                                    sets: true
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     })
       

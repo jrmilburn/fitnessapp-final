@@ -1,36 +1,68 @@
 "use client"
 
-import Programs from "../../components/program/Programs"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import Programs2 from "../../components/program/Programs2"
+import ProgramBrowser from "./components/program-browser"
+import { Dumbbell } from "lucide-react"
 
 export default function ProgramPage() {
-  const router = useRouter();
+  const router = useRouter()
   const [programs, setPrograms] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/programs')
-      .then(response => response.json())
-      .then(data => {
+    setLoading(true)
+    fetch("/api/programs")
+      .then((response) => response.json())
+      .then((data) => {
         if (!data || data.length === 0) {
-          router.push("/new");
-          return;
+          router.push("/new")
+          return
         }
-        setPrograms(data);
-        console.log(data);
+        setPrograms(data)
+        setLoading(false)
       })
-  }, [])
+      .catch((error) => {
+        console.error("Error fetching programs:", error)
+        setLoading(false)
+      })
+  }, [router])
+
+  const handleDeleteProgram = async (programId) => {
+    try {
+      const response = await fetch("/api/program", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ programId }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setPrograms(data.programs)
+
+        if (data.programs.length === 0) {
+          router.push("/new")
+        }
+      }
+    } catch (error) {
+      console.error("Error deleting program:", error)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="max-h-[calc(100vh - 112px)] flex items-center justify-center">
+        <div className="flex flex-col items-center">
+          <Dumbbell className="h-12 w-12 text-blue-600 animate-pulse mb-4" />
+          <p className="text-gray-600">Loading your programs...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {programs.length !== 0 && (
-        <div className="flex-1 w-full flex flex-col gap-4 overflow-none">
-          <Programs2
-            programs={programs}
-          />
-        </div>
-      )}
+    <div className="max-h-[calc(100vh - 112px)] bg-gray-50">
+      <ProgramBrowser programs={programs} onDeleteProgram={handleDeleteProgram} />
     </div>
   )
 }
