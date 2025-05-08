@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Plus, Trash2, GripVertical, Edit, Save } from "lucide-react"
-import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd"
+import { Droppable, Draggable } from "@hello-pangea/dnd"
 
 export default function WorkoutStructure({ workout, weekIndex, workoutIndex, setWeekLayout }) {
   const [workoutName, setWorkoutName] = useState(workout.name)
@@ -62,42 +62,31 @@ export default function WorkoutStructure({ workout, weekIndex, workoutIndex, set
 
   // Add a new exercise
   const addExercise = () => {
-    if (!newExercise.name) return;
-  
-    setWeekLayout(prev =>
-      prev.map((week, wIdx) =>
-        wIdx === weekIndex
-          ? {
-              ...week,
-              workouts: week.workouts.map((w, wi) =>
-                wi === workoutIndex
-                  ? {
-                      ...w,
-                      exercises: [
-                        ...w.exercises,
-                        {
-                          ...newExercise,
-                          exerciseNo: w.exercises.length,
-                        },
-                      ],
-                    }
-                  : w
-              ),
-            }
-          : week
-      )
-    );
-  
-    // reset form / close modal
-    setNewExercise({ name: "", muscle: "Chest", sets: [{ setNo: 1, reps: 10, weight: 0 }] });
-    setShowAddExercise(false);
-  };
-  
+    console.log("Adding exercise:", newExercise.name)
+    if (!newExercise.name) return
+
+    setWeekLayout((prevLayout) => {
+      const newLayout = JSON.parse(JSON.stringify(prevLayout))
+      newLayout[weekIndex].workouts[workoutIndex].exercises.push({
+        ...newExercise,
+        exerciseNo: newLayout[weekIndex].workouts[workoutIndex].exercises.length,
+        id: Date.now().toString(),
+      })
+      return newLayout
+    })
+
+    setNewExercise({
+      name: "",
+      muscle: "Chest",
+      sets: [{ setNo: 1, reps: 10, weight: 0 }],
+    })
+    setShowAddExercise(false)
+  }
 
   // Remove an exercise
   const removeExercise = (exerciseIndex) => {
     setWeekLayout((prevLayout) => {
-      const newLayout = [...prevLayout]
+      const newLayout = JSON.parse(JSON.stringify(prevLayout))
       newLayout[weekIndex].workouts[workoutIndex].exercises.splice(exerciseIndex, 1)
       // Update exerciseNo for remaining exercises
       newLayout[weekIndex].workouts[workoutIndex].exercises.forEach((ex, idx) => {
@@ -147,7 +136,7 @@ export default function WorkoutStructure({ workout, weekIndex, workoutIndex, set
     if (editingExerciseIndex === null || !editingExercise) return
 
     setWeekLayout((prevLayout) => {
-      const newLayout = [...prevLayout]
+      const newLayout = JSON.parse(JSON.stringify(prevLayout))
       newLayout[weekIndex].workouts[workoutIndex].exercises[editingExerciseIndex] = editingExercise
       return newLayout
     })
@@ -155,29 +144,6 @@ export default function WorkoutStructure({ workout, weekIndex, workoutIndex, set
     setEditingExerciseIndex(null)
     setEditingExercise(null)
     setShowEditExercise(false)
-  }
-
-  // Handle drag and drop reordering
-  const onDragEnd = (result) => {
-    if (!result.destination) return
-
-    const sourceIndex = result.source.index
-    const destinationIndex = result.destination.index
-
-    setWeekLayout((prevLayout) => {
-      const newLayout = [...prevLayout]
-      const exercises = [...newLayout[weekIndex].workouts[workoutIndex].exercises]
-      const [removed] = exercises.splice(sourceIndex, 1)
-      exercises.splice(destinationIndex, 0, removed)
-
-      // Update exerciseNo for all exercises
-      exercises.forEach((ex, idx) => {
-        ex.exerciseNo = idx
-      })
-
-      newLayout[weekIndex].workouts[workoutIndex].exercises = exercises
-      return newLayout
-    })
   }
 
   // Update a set in the new exercise
@@ -243,72 +209,70 @@ export default function WorkoutStructure({ workout, weekIndex, workoutIndex, set
       </div>
 
       <div className="p-4">
-        {workout.exercises.length > 0 ? (
-          <DragDropContext onDragEnd={onDragEnd}>
-            <Droppable droppableId={`workout-${workoutIndex}`}>
-              {(provided) => (
-                <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead>
-                      <tr>
-                        <th className="w-[30px]"></th>
-                        <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider py-2">
-                          Exercise
-                        </th>
-                        <th className="text-right text-xs font-medium text-gray-500 uppercase tracking-wider py-2">
-                          Sets × Reps
-                        </th>
-                        <th className="w-[50px]"></th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200">
-                      {workout.exercises.map((exercise, index) => (
-                        <Draggable
-                          key={index}
-                          draggableId={exercise.id || `exercise-${index}`}
-                          index={index}
-                        >
-                          {(provided) => (
-                            <tr ref={provided.innerRef} {...provided.draggableProps} className="hover:bg-gray-50">
-                              <td className="p-2">
-                                <div {...provided.dragHandleProps}>
-                                  <GripVertical className="h-4 w-4 text-gray-400" />
-                                </div>
-                              </td>
-                              <td className="py-2 font-medium">{exercise.name}</td>
-                              <td className="py-2 text-right text-gray-500">
-                                {exercise.sets?.length || 0} × {exercise.sets?.[0]?.reps || 0}
-                              </td>
-                              <td className="p-2">
-                                <div className="flex gap-1">
-                                  <button
-                                    className="text-gray-400 hover:text-gray-600"
-                                    onClick={() => startEditExercise(index)}
-                                  >
-                                    <Edit className="h-4 w-4" />
-                                  </button>
-                                  <button
-                                    className="text-gray-400 hover:text-red-600"
-                                    onClick={() => removeExercise(index)}
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          )}
-                        </Draggable>
-                      ))}
-                      {provided.placeholder}
-                    </tbody>
-                  </table>
-                </div>
+        <Droppable droppableId={`workout-${weekIndex}-${workoutIndex}`}>
+          {(provided) => (
+            <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
+              {workout.exercises.length > 0 ? (
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead>
+                    <tr>
+                      <th className="w-[30px]"></th>
+                      <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider py-2">
+                        Exercise
+                      </th>
+                      <th className="text-right text-xs font-medium text-gray-500 uppercase tracking-wider py-2">
+                        Sets × Reps
+                      </th>
+                      <th className="w-[50px]"></th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {workout.exercises.map((exercise, index) => (
+                      <Draggable
+                        key={exercise.id || `exercise-${weekIndex}-${workoutIndex}-${index}`}
+                        draggableId={exercise.id || `exercise-${weekIndex}-${workoutIndex}-${index}`}
+                        index={index}
+                      >
+                        {(provided) => (
+                          <tr ref={provided.innerRef} {...provided.draggableProps} className="hover:bg-gray-50">
+                            <td className="p-2">
+                              <div {...provided.dragHandleProps}>
+                                <GripVertical className="h-4 w-4 text-gray-400" />
+                              </div>
+                            </td>
+                            <td className="py-2 font-medium">{exercise.name}</td>
+                            <td className="py-2 text-right text-gray-500">
+                              {exercise.sets?.length || 0} × {exercise.sets?.[0]?.reps || 0}
+                            </td>
+                            <td className="p-2">
+                              <div className="flex gap-1">
+                                <button
+                                  className="text-gray-400 hover:text-gray-600"
+                                  onClick={() => startEditExercise(index)}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </button>
+                                <button
+                                  className="text-gray-400 hover:text-red-600"
+                                  onClick={() => removeExercise(index)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="text-center py-4 text-gray-500">No exercises added yet</div>
               )}
-            </Droppable>
-          </DragDropContext>
-        ) : (
-          <div className="text-center py-4 text-gray-500">No exercises added yet</div>
-        )}
+            </div>
+          )}
+        </Droppable>
 
         <button
           className="w-full mt-4 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 flex items-center justify-center gap-2"
@@ -322,7 +286,7 @@ export default function WorkoutStructure({ workout, weekIndex, workoutIndex, set
       {/* Add Exercise Modal */}
       {showAddExercise && (
         <div
-          className="fixed inset-0 bg-black/30 flex items-center justify-center z-[10000]"
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">

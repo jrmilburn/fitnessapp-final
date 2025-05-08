@@ -41,28 +41,33 @@ export default function WeightProgressionChart({ weightData, weekLabels, isMobil
   }
 
   useEffect(() => {
-    if (!weightData || Object.keys(weightData).length === 0) {
+    if (!weightData || Object.keys(weightData || {}).length === 0) {
       setChartData({
-        labels: weekLabels,
+        labels: weekLabels || [],
         datasets: [],
       })
       return
     }
 
-    const datasets = Object.keys(weightData).map((exercise, index) => ({
-      label: exercise,
-      data: weightData[exercise],
-      backgroundColor: generateColor(index),
-      borderColor: generateColor(index).replace("0.7", "1"),
-      borderWidth: 2,
-      pointRadius: 4,
-      pointHoverRadius: 6,
-      tension: 0.1,
-      spanGaps: true, // Connect the line across null values
-    }))
+    const datasets = Object.keys(weightData || {}).map((exercise, index) => {
+      // Ensure we have valid data
+      const data = weightData[exercise] || []
+
+      return {
+        label: exercise,
+        data: data,
+        backgroundColor: generateColor(index),
+        borderColor: generateColor(index).replace("0.7", "1"),
+        borderWidth: 2,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        tension: 0.1,
+        spanGaps: true, // Connect the line across null values
+      }
+    })
 
     setChartData({
-      labels: weekLabels,
+      labels: weekLabels || [],
       datasets,
     })
   }, [weightData, weekLabels])
@@ -101,7 +106,22 @@ export default function WeightProgressionChart({ weightData, weekLabels, isMobil
       x: {
         ticks: {
           font: {
-            size: isMobile ? 10 : 12,
+            size: isMobile ? 8 : 10,
+          },
+          // Improve label display for longer program-week labels
+          maxRotation: 90,
+          minRotation: 45,
+          autoSkip: true,
+          autoSkipPadding: 15,
+          callback: function (value, index) {
+            // For many labels, show fewer ticks
+            const labels = this.chart.data.labels
+            if (labels.length > 12) {
+              // Show every nth label based on total count
+              const skipFactor = Math.ceil(labels.length / 12)
+              return index % skipFactor === 0 ? labels[index] : ""
+            }
+            return labels[index]
           },
         },
       },
@@ -117,6 +137,8 @@ export default function WeightProgressionChart({ weightData, weekLabels, isMobil
           font: {
             size: isMobile ? 10 : 12,
           },
+          // Start y-axis at 0 to avoid misleading visuals
+          beginAtZero: true,
         },
       },
     },

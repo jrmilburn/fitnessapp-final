@@ -27,7 +27,8 @@ model User {
 
   currentProgramId String?
 
-  fatigue Int @default(0)
+  fatigue          Int                @default(0)
+  ExerciseTemplate ExerciseTemplate[]
 }
 
 model Account {
@@ -68,6 +69,8 @@ model Program {
 
   userId String?
 
+  createdAt DateTime @default(now())
+
   weeks Week[]
 }
 
@@ -90,23 +93,60 @@ model Workout {
   exercises      Exercise[]
   MuscleFeedback MuscleFeedback[]
 
-  nextWorkoutId String?
+  nextWorkoutId     String?
   previousWorkoutId String?
 
   programmed Boolean @default(false)
 
+  createdAt DateTime @default(now())
+
   feedbackId String?
 }
 
+model ExerciseTemplate {
+  id              String       @id @default(cuid())
+  name            String
+  description     String?                              // cues, video URL, etc.
+  isPublic        Boolean      @default(false)
+
+  createdByUserId String?
+  createdByUser   User?        @relation(fields: [createdByUserId], references: [id])
+
+  muscleGroupId   String
+  muscleGroup     MuscleGroup  @relation(fields: [muscleGroupId], references: [id])
+
+  createdAt       DateTime     @default(now())
+
+  instances       Exercise[]
+  
+  @@index([muscleGroupId])
+}
+
 model Exercise {
-  id         String  @id @default(cuid())
-  exerciseNo Int     @default(0)
-  name       String
-  muscle     String
-  workoutId  String
-  workout    Workout @relation(fields: [workoutId], references: [id])
+  id         String @id @default(cuid())
+  exerciseNo Int    @default(0)
+
+  templateId String
+  template   ExerciseTemplate @relation(fields: [templateId], references: [id])
+
+  name   String
+  muscle String
+
+  workoutId String
+  workout   Workout @relation(fields: [workoutId], references: [id])
 
   sets Set[]
+
+  createdAt DateTime @default(now())
+
+  @@index([workoutId, templateId])
+}
+
+model MuscleGroup {
+  id               String             @id @default(cuid())
+  name             String             @unique                 
+  recoveryFactor   Float                                     
+  exerciseTemplates ExerciseTemplate[]                       
 }
 
 model Set {
@@ -117,6 +157,8 @@ model Set {
   complete   Boolean  @default(false)
   exerciseId String
   exercise   Exercise @relation(fields: [exerciseId], references: [id])
+
+  createdAt DateTime @default(now())
 }
 
 model MuscleFeedback {

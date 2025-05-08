@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Copy } from "lucide-react"
 import WorkoutStructure from "./workout-structure"
+import { DragDropContext } from "@hello-pangea/dnd"
 
 export default function WeekLayout({ weekLayout, setWeekLayout, autoRegulated }) {
   const [activeWeek, setActiveWeek] = useState("1")
@@ -44,6 +45,62 @@ export default function WeekLayout({ weekLayout, setWeekLayout, autoRegulated })
 
   // If auto-regulated, only show the first week
   const displayedWeeks = autoRegulated ? weekLayout.slice(0, 1) : weekLayout
+
+  // Handle drag end for exercises between workouts
+  const handleDragEnd = (result) => {
+    const { source, destination } = result
+
+    // Drop outside a droppable area
+    if (!destination) return
+
+    // Parse the droppable IDs to get workout indexes
+    // Format: "workout-{weekIndex}-{workoutIndex}"
+    const sourceIdParts = source.droppableId.split("-")
+    const destIdParts = destination.droppableId.split("-")
+
+    const sourceWeekIndex = Number.parseInt(sourceIdParts[1])
+    const sourceWorkoutIndex = Number.parseInt(sourceIdParts[2])
+    const destWeekIndex = Number.parseInt(destIdParts[1])
+    const destWorkoutIndex = Number.parseInt(destIdParts[2])
+
+    setWeekLayout((prevLayout) => {
+      // Create a deep copy to avoid mutation issues
+      const newLayout = JSON.parse(JSON.stringify(prevLayout))
+
+      // If moving within the same workout
+      if (sourceWeekIndex === destWeekIndex && sourceWorkoutIndex === destWorkoutIndex) {
+        const exercises = newLayout[sourceWeekIndex].workouts[sourceWorkoutIndex].exercises
+        const [removed] = exercises.splice(source.index, 1)
+        exercises.splice(destination.index, 0, removed)
+
+        // Update exerciseNo for all exercises
+        exercises.forEach((ex, idx) => {
+          ex.exerciseNo = idx
+        })
+      }
+      // If moving between different workouts
+      else {
+        // Get the exercise from source workout
+        const sourceExercises = newLayout[sourceWeekIndex].workouts[sourceWorkoutIndex].exercises
+        const [removed] = sourceExercises.splice(source.index, 1)
+
+        // Add to destination workout
+        const destExercises = newLayout[destWeekIndex].workouts[destWorkoutIndex].exercises
+        destExercises.splice(destination.index, 0, removed)
+
+        // Update exerciseNo for both source and destination workouts
+        sourceExercises.forEach((ex, idx) => {
+          ex.exerciseNo = idx
+        })
+
+        destExercises.forEach((ex, idx) => {
+          ex.exerciseNo = idx
+        })
+      }
+
+      return newLayout
+    })
+  }
 
   return (
     <div className="space-y-6">
@@ -112,31 +169,35 @@ export default function WeekLayout({ weekLayout, setWeekLayout, autoRegulated })
       )}
 
       {!autoRegulated && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {weekLayout[Number.parseInt(activeWeek) - 1]?.workouts.map((workout, workoutIndex) => (
-            <WorkoutStructure
-              key={`week-${activeWeek}-workout-${workout.workoutNo}`}
-              workout={workout}
-              weekIndex={Number.parseInt(activeWeek) - 1}
-              workoutIndex={workoutIndex}
-              setWeekLayout={setWeekLayout}
-            />
-          ))}
-        </div>
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {weekLayout[Number.parseInt(activeWeek) - 1]?.workouts.map((workout, workoutIndex) => (
+              <WorkoutStructure
+                key={`week-${activeWeek}-workout-${workout.workoutNo}`}
+                workout={workout}
+                weekIndex={Number.parseInt(activeWeek) - 1}
+                workoutIndex={workoutIndex}
+                setWeekLayout={setWeekLayout}
+              />
+            ))}
+          </div>
+        </DragDropContext>
       )}
 
       {autoRegulated && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {displayedWeeks[0].workouts.map((workout, workoutIndex) => (
-            <WorkoutStructure
-              key={`week-1-workout-${workout.workoutNo}`}
-              workout={workout}
-              weekIndex={0}
-              workoutIndex={workoutIndex}
-              setWeekLayout={setWeekLayout}
-            />
-          ))}
-        </div>
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {displayedWeeks[0].workouts.map((workout, workoutIndex) => (
+              <WorkoutStructure
+                key={`week-1-workout-${workout.workoutNo}`}
+                workout={workout}
+                weekIndex={0}
+                workoutIndex={workoutIndex}
+                setWeekLayout={setWeekLayout}
+              />
+            ))}
+          </div>
+        </DragDropContext>
       )}
     </div>
   )

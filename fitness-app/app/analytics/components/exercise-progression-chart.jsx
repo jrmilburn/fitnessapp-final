@@ -25,7 +25,12 @@ export default function ExerciseProgressionChart({ exerciseData, isMobile }) {
   const [chartType, setChartType] = useState("weight") // weight, reps, oneRM
 
   useEffect(() => {
-    if (!exerciseData || !exerciseData.timeSeriesData || exerciseData.timeSeriesData.length === 0) {
+    if (
+      !exerciseData ||
+      !exerciseData.timeSeriesData ||
+      !Array.isArray(exerciseData.timeSeriesData) ||
+      exerciseData.timeSeriesData.length === 0
+    ) {
       setChartData({
         labels: [],
         datasets: [],
@@ -34,10 +39,13 @@ export default function ExerciseProgressionChart({ exerciseData, isMobile }) {
     }
 
     // Extract labels (months)
-    const labels = exerciseData.timeSeriesData.map((data) => {
-      const [year, month] = data.month.split("-")
-      return `${month}/${year.slice(2)}`
-    })
+    const labels = exerciseData.timeSeriesData
+      .map((data) => {
+        if (!data || !data.month) return ""
+        const [year, month] = (data.month || "").split("-")
+        return `${month}/${year?.slice(2) || ""}`
+      })
+      .filter(Boolean)
 
     // Create datasets based on chart type
     let datasets = []
@@ -46,7 +54,7 @@ export default function ExerciseProgressionChart({ exerciseData, isMobile }) {
       datasets = [
         {
           label: "Average Weight (kg)",
-          data: exerciseData.timeSeriesData.map((data) => data.avgWeight),
+          data: exerciseData.timeSeriesData.map((data) => data?.avgWeight || null),
           borderColor: "rgba(54, 162, 235, 1)",
           backgroundColor: "rgba(54, 162, 235, 0.5)",
           borderWidth: 2,
@@ -57,7 +65,7 @@ export default function ExerciseProgressionChart({ exerciseData, isMobile }) {
         },
         {
           label: "Max Weight (kg)",
-          data: exerciseData.timeSeriesData.map((data) => data.maxWeight),
+          data: exerciseData.timeSeriesData.map((data) => data?.maxWeight || null),
           borderColor: "rgba(75, 192, 192, 1)",
           backgroundColor: "rgba(75, 192, 192, 0.5)",
           borderWidth: 2,
@@ -72,7 +80,7 @@ export default function ExerciseProgressionChart({ exerciseData, isMobile }) {
       datasets = [
         {
           label: "Average Reps",
-          data: exerciseData.timeSeriesData.map((data) => data.avgReps),
+          data: exerciseData.timeSeriesData.map((data) => data?.avgReps || null),
           borderColor: "rgba(255, 99, 132, 1)",
           backgroundColor: "rgba(255, 99, 132, 0.5)",
           borderWidth: 2,
@@ -83,7 +91,7 @@ export default function ExerciseProgressionChart({ exerciseData, isMobile }) {
         },
         {
           label: "Max Reps",
-          data: exerciseData.timeSeriesData.map((data) => data.maxReps),
+          data: exerciseData.timeSeriesData.map((data) => data?.maxReps || null),
           borderColor: "rgba(153, 102, 255, 1)",
           backgroundColor: "rgba(153, 102, 255, 0.5)",
           borderWidth: 2,
@@ -98,7 +106,7 @@ export default function ExerciseProgressionChart({ exerciseData, isMobile }) {
       datasets = [
         {
           label: "Estimated One-Rep Max (kg)",
-          data: exerciseData.timeSeriesData.map((data) => data.estimatedOneRM),
+          data: exerciseData.timeSeriesData.map((data) => data?.estimatedOneRM || null),
           borderColor: "rgba(255, 159, 64, 1)",
           backgroundColor: "rgba(255, 159, 64, 0.5)",
           borderWidth: 2,

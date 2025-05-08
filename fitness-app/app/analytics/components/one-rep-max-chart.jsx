@@ -41,9 +41,14 @@ export default function OneRepMaxChart({ exerciseData, selectedExercises, weekLa
   }
 
   useEffect(() => {
-    if (!exerciseData || Object.keys(exerciseData).length === 0 || selectedExercises.length === 0) {
+    if (
+      !exerciseData ||
+      Object.keys(exerciseData || {}).length === 0 ||
+      !selectedExercises ||
+      selectedExercises.length === 0
+    ) {
       setChartData({
-        labels: weekLabels,
+        labels: weekLabels || [],
         datasets: [],
       })
       return
@@ -53,8 +58,8 @@ export default function OneRepMaxChart({ exerciseData, selectedExercises, weekLa
       .filter((exercise) => exerciseData[exercise])
       .map((exercise, index) => {
         // Calculate estimated 1RM for each week
-        const oneRMData = exerciseData[exercise].weeks.map((week) => {
-          if (week.maxWeight === 0 || week.maxReps === 0) return null
+        const oneRMData = (exerciseData[exercise]?.weeks || []).map((week) => {
+          if (!week || week.maxWeight === 0 || week.maxReps === 0) return null
 
           // Use Brzycki formula: weight * (36 / (37 - reps))
           // Limit to 10 reps for accuracy
@@ -76,7 +81,7 @@ export default function OneRepMaxChart({ exerciseData, selectedExercises, weekLa
       })
 
     setChartData({
-      labels: weekLabels,
+      labels: weekLabels || [],
       datasets,
     })
   }, [exerciseData, selectedExercises, weekLabels])
@@ -122,7 +127,22 @@ export default function OneRepMaxChart({ exerciseData, selectedExercises, weekLa
       x: {
         ticks: {
           font: {
-            size: isMobile ? 10 : 12,
+            size: isMobile ? 8 : 10,
+          },
+          // Improve label display for longer program-week labels
+          maxRotation: 90,
+          minRotation: 45,
+          autoSkip: true,
+          autoSkipPadding: 15,
+          callback: function (value, index) {
+            // For many labels, show fewer ticks
+            const labels = this.chart.data.labels
+            if (labels.length > 12) {
+              // Show every nth label based on total count
+              const skipFactor = Math.ceil(labels.length / 12)
+              return index % skipFactor === 0 ? labels[index] : ""
+            }
+            return labels[index]
           },
         },
       },

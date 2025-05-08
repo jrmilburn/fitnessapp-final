@@ -42,7 +42,7 @@ export default function MuscleGroupDistribution({ volumeData, isMobile }) {
   }
 
   useEffect(() => {
-    if (!volumeData || Object.keys(volumeData).length === 0) {
+    if (!volumeData || Object.keys(volumeData || {}).length === 0) {
       setChartData({
         labels: [],
         datasets: [],
@@ -52,8 +52,9 @@ export default function MuscleGroupDistribution({ volumeData, isMobile }) {
 
     // Calculate total sets per muscle group across all weeks
     const totalSets = {}
-    Object.keys(volumeData).forEach((muscle) => {
-      totalSets[muscle] = volumeData[muscle].reduce((sum, sets) => sum + sets, 0)
+    Object.keys(volumeData || {}).forEach((muscle) => {
+      const muscleData = volumeData[muscle] || []
+      totalSets[muscle] = muscleData.reduce((sum, sets) => sum + (sets || 0), 0)
     })
 
     // Sort muscles by total sets (descending)

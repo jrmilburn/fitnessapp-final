@@ -24,9 +24,16 @@ export default function WeightRepCorrelationChart({ weightData, repData, weekLab
   })
 
   useEffect(() => {
-    if (!weightData || !repData || weightData.length === 0 || repData.length === 0) {
+    if (
+      !weightData ||
+      !repData ||
+      !Array.isArray(weightData) ||
+      !Array.isArray(repData) ||
+      weightData.length === 0 ||
+      repData.length === 0
+    ) {
       setChartData({
-        labels: weekLabels,
+        labels: weekLabels || [],
         datasets: [],
       })
       return
@@ -61,7 +68,7 @@ export default function WeightRepCorrelationChart({ weightData, repData, weekLab
     ]
 
     setChartData({
-      labels: weekLabels,
+      labels: weekLabels || [],
       datasets,
     })
   }, [weightData, repData, weekLabels])
@@ -99,7 +106,22 @@ export default function WeightRepCorrelationChart({ weightData, repData, weekLab
       x: {
         ticks: {
           font: {
-            size: isMobile ? 10 : 12,
+            size: isMobile ? 8 : 10,
+          },
+          // Improve label display for longer program-week labels
+          maxRotation: 90,
+          minRotation: 45,
+          autoSkip: true,
+          autoSkipPadding: 15,
+          callback: function (value, index) {
+            // For many labels, show fewer ticks
+            const labels = this.chart.data.labels
+            if (labels.length > 12) {
+              // Show every nth label based on total count
+              const skipFactor = Math.ceil(labels.length / 12)
+              return index % skipFactor === 0 ? labels[index] : ""
+            }
+            return labels[index]
           },
         },
       },

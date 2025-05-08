@@ -12,7 +12,16 @@ export default function ExerciseDetailCard({ exercise, exerciseData, weekLabels 
 
   // Calculate progress metrics
   const calculateProgress = () => {
-    const nonEmptyWeeks = exerciseData.weeks.filter((week) => week.sets > 0)
+    if (!exerciseData || !exerciseData.weeks) {
+      return {
+        weightProgress: 0,
+        repProgress: 0,
+        volumeProgress: 0,
+        oneRMProgress: 0,
+      }
+    }
+
+    const nonEmptyWeeks = (exerciseData.weeks || []).filter((week) => week && week.sets > 0)
 
     if (nonEmptyWeeks.length < 2) {
       return {
