@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { Plus, Trash2, GripVertical, Edit, Save } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Plus, Trash2, GripVertical, Edit, Save, Search } from "lucide-react"
 import { Droppable, Draggable } from "@hello-pangea/dnd"
 
 export default function WorkoutStructure({ workout, weekIndex, workoutIndex, setWeekLayout }) {
@@ -10,17 +10,74 @@ export default function WorkoutStructure({ workout, weekIndex, workoutIndex, set
   const [showAddExercise, setShowAddExercise] = useState(false)
   const [showEditExercise, setShowEditExercise] = useState(false)
   const [editingExerciseIndex, setEditingExerciseIndex] = useState(null)
+  const [muscleGroups, setMuscleGroups] = useState([])
+  const [exerciseTemplates, setExerciseTemplates] = useState([])
+  const [filteredTemplates, setFilteredTemplates] = useState([])
+  const [selectedMuscleGroup, setSelectedMuscleGroup] = useState("")
+  const [searchTerm, setSearchTerm] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
 
   const [newExercise, setNewExercise] = useState({
     name: "",
-    muscle: "Chest", // Default muscle group
+    muscle: "",
+    templateId: "",
     sets: [{ setNo: 1, reps: 10, weight: 0 }],
   })
 
   const [editingExercise, setEditingExercise] = useState(null)
 
-  // Available muscle groups
-  const muscleGroups = ["Chest", "Back", "Shoulders", "Biceps", "Triceps", "Legs", "Glutes", "Calves", "Abs", "Other"]
+  // Fetch muscle groups and exercise templates on component mount
+  useEffect(() => {
+    const fetchMuscleGroups = async () => {
+      try {
+        const response = await fetch("/api/muscle-groups")
+        if (response.ok) {
+          const data = await response.json()
+          setMuscleGroups(data)
+        }
+      } catch (error) {
+        console.error("Error fetching muscle groups:", error)
+      }
+    }
+
+    fetchMuscleGroups()
+  }, [])
+
+  // Fetch exercise templates when adding or editing an exercise
+  const fetchExerciseTemplates = async () => {
+    setIsLoading(true)
+    try {
+      const response = await fetch("/api/exercise-templates")
+      if (response.ok) {
+        const data = await response.json()
+        const allTemplates = [...data.defaultExercises, ...data.userExercises]
+        setExerciseTemplates(allTemplates)
+        setFilteredTemplates(allTemplates)
+      }
+    } catch (error) {
+      console.error("Error fetching exercise templates:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Filter templates based on muscle group and search term
+  useEffect(() => {
+    if (exerciseTemplates.length > 0) {
+      let filtered = [...exerciseTemplates]
+
+      if (selectedMuscleGroup) {
+        filtered = filtered.filter((template) => template.muscleGroup.id === selectedMuscleGroup)
+      }
+
+      if (searchTerm) {
+        const term = searchTerm.toLowerCase()
+        filtered = filtered.filter((template) => template.name.toLowerCase().includes(term))
+      }
+
+      setFilteredTemplates(filtered)
+    }
+  }, [selectedMuscleGroup, searchTerm, exerciseTemplates])
 
   // Update workout name
   const updateWorkoutName = () => {
@@ -30,6 +87,16 @@ export default function WorkoutStructure({ workout, weekIndex, workoutIndex, set
       return newLayout
     })
     setIsEditingName(false)
+  }
+
+  // Select an exercise template
+  const selectExerciseTemplate = (template) => {
+    setNewExercise({
+      name: template.name,
+      muscle: template.muscleGroup.name,
+      templateId: template.id,
+      sets: [{ setNo: 1, reps: 10, weight: 0 }],
+    })
   }
 
   // Add a new set to the new exercise
@@ -62,8 +129,7 @@ export default function WorkoutStructure({ workout, weekIndex, workoutIndex, set
 
   // Add a new exercise
   const addExercise = () => {
-    console.log("Adding exercise:", newExercise.name)
-    if (!newExercise.name) return
+    if (!newExercise.name || !newExercise.templateId) return
 
     setWeekLayout((prevLayout) => {
       const newLayout = JSON.parse(JSON.stringify(prevLayout))
@@ -77,10 +143,13 @@ export default function WorkoutStructure({ workout, weekIndex, workoutIndex, set
 
     setNewExercise({
       name: "",
-      muscle: "Chest",
+      muscle: "",
+      templateId: "",
       sets: [{ setNo: 1, reps: 10, weight: 0 }],
     })
     setShowAddExercise(false)
+    setSelectedMuscleGroup("")
+    setSearchTerm("")
   }
 
   // Remove an exercise
@@ -173,13 +242,18 @@ export default function WorkoutStructure({ workout, weekIndex, workoutIndex, set
   }
 
   const toggleAddExerciseModal = (show) => {
-    if (!show) {
+    if (show) {
+      fetchExerciseTemplates()
+    } else {
       // Reset the new exercise form when closing
       setNewExercise({
         name: "",
-        muscle: "Chest",
+        muscle: "",
+        templateId: "",
         sets: [{ setNo: 1, reps: 10, weight: 0 }],
       })
+      setSelectedMuscleGroup("")
+      setSearchTerm("")
     }
     setShowAddExercise(show)
   }
@@ -240,7 +314,10 @@ export default function WorkoutStructure({ workout, weekIndex, workoutIndex, set
                                 <GripVertical className="h-4 w-4 text-gray-400" />
                               </div>
                             </td>
-                            <td className="py-2 font-medium">{exercise.name}</td>
+                            <td className="py-2 font-medium">
+                              {exercise.name}
+                              <div className="text-xs text-gray-500">{exercise.muscle}</div>
+                            </td>
                             <td className="py-2 text-right text-gray-500">
                               {exercise.sets?.length || 0} × {exercise.sets?.[0]?.reps || 0}
                             </td>
@@ -286,85 +363,151 @@ export default function WorkoutStructure({ workout, weekIndex, workoutIndex, set
       {/* Add Exercise Modal */}
       {showAddExercise && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black/30 flex items-center justify-center z-50"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-medium mb-4">Add New Exercise</h3>
+          <div className="bg-white rounded-lg p-6 max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-medium mb-4">Add Exercise</h3>
 
             <div className="space-y-4">
-              <div>
-                <label htmlFor="exercise-name" className="block text-sm font-medium text-gray-700 mb-1">
-                  Exercise Name
-                </label>
-                <input
-                  id="exercise-name"
-                  value={newExercise.name}
-                  onChange={(e) => setNewExercise({ ...newExercise, name: e.target.value })}
-                  placeholder="e.g., Bench Press"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="muscle-group" className="block text-sm font-medium text-gray-700 mb-1">
-                  Muscle Group
-                </label>
-                <select
-                  id="muscle-group"
-                  value={newExercise.muscle}
-                  onChange={(e) => setNewExercise({ ...newExercise, muscle: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  {muscleGroups.map((muscle) => (
-                    <option key={muscle} value={muscle}>
-                      {muscle}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <label className="block text-sm font-medium text-gray-700">Sets</label>
-                  <button type="button" onClick={addSet} className="text-blue-600 hover:text-blue-800 text-sm">
-                    + Add Set
-                  </button>
-                </div>
-
-                {newExercise.sets.map((set, index) => (
-                  <div key={index} className="flex items-center gap-2 mb-2">
-                    <div className="w-10 text-center text-sm font-medium text-gray-500">#{set.setNo}</div>
-                    <div className="flex-1">
-                      <input
-                        type="number"
-                        value={set.reps}
-                        onChange={(e) => updateNewExerciseSet(index, "reps", e.target.value)}
-                        placeholder="Reps"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <input
-                        type="number"
-                        value={set.weight}
-                        onChange={(e) => updateNewExerciseSet(index, "weight", e.target.value)}
-                        placeholder="Weight (kg)"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
-                    {newExercise.sets.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeSet(index)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    )}
+              {/* Search and filter */}
+              <div className="flex flex-col md:flex-row gap-2">
+                <div className="relative flex-1">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Search className="h-4 w-4 text-gray-400" />
                   </div>
-                ))}
+                  <input
+                    type="text"
+                    placeholder="Search exercises..."
+                    className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+                <div className="md:w-1/3">
+                  <select
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={selectedMuscleGroup}
+                    onChange={(e) => setSelectedMuscleGroup(e.target.value)}
+                  >
+                    <option value="">All Muscle Groups</option>
+                    {muscleGroups.map((group) => (
+                      <option key={group.id} value={group.id}>
+                        {group.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
+
+              {/* Exercise templates list */}
+              <div className="border rounded-md overflow-hidden">
+                {isLoading ? (
+                  <div className="p-4 text-center">Loading exercise templates...</div>
+                ) : filteredTemplates.length > 0 ? (
+                  <div className="max-h-144 overflow-y-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50 sticky top-0">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Name
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Muscle Group
+                          </th>
+                          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Action
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {filteredTemplates.map((template) => (
+                          <tr
+                            key={template.id}
+                            className={`hover:bg-gray-50 cursor-pointer ${
+                              newExercise.templateId === template.id ? "bg-blue-50" : ""
+                            }`}
+                            onClick={() => selectExerciseTemplate(template)}
+                          >
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="font-medium text-gray-900">{template.name}</div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-500">{template.muscleGroup.name}</div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-right">
+                              <button
+                                className={`px-3 py-1 rounded-md ${
+                                  newExercise.templateId === template.id
+                                    ? "bg-blue-600 text-white"
+                                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                }`}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  selectExerciseTemplate(template)
+                                }}
+                              >
+                                {newExercise.templateId === template.id ? "Selected" : "Select"}
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="p-4 text-center text-gray-500">No exercise templates found</div>
+                )}
+              </div>
+
+              {/* Selected exercise details */}
+              {newExercise.templateId && (
+                <div className="border rounded-md p-4 bg-gray-50">
+                  <h4 className="font-medium mb-2">Selected Exercise: {newExercise.name}</h4>
+
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <label className="block text-sm font-medium text-gray-700">Sets</label>
+                      <button type="button" onClick={addSet} className="text-blue-600 hover:text-blue-800 text-sm">
+                        + Add Set
+                      </button>
+                    </div>
+
+                    {newExercise.sets.map((set, index) => (
+                      <div key={index} className="flex items-center gap-2 mb-2">
+                        <div className="w-10 text-center text-sm font-medium text-gray-500">#{set.setNo}</div>
+                        <div className="flex-1">
+                          <input
+                            type="number"
+                            value={set.reps}
+                            onChange={(e) => updateNewExerciseSet(index, "reps", e.target.value)}
+                            placeholder="Reps"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <input
+                            type="number"
+                            value={set.weight}
+                            onChange={(e) => updateNewExerciseSet(index, "weight", e.target.value)}
+                            placeholder="Weight (kg)"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                        </div>
+                        {newExercise.sets.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeSet(index)}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="flex justify-end gap-2 mt-6">
@@ -375,12 +518,13 @@ export default function WorkoutStructure({ workout, weekIndex, workoutIndex, set
                 Cancel
               </button>
               <button
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  addExercise()
-                }}
+                className={`px-4 py-2 rounded-md ${
+                  newExercise.templateId
+                    ? "bg-blue-600 hover:bg-blue-700 text-white"
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                }`}
+                onClick={addExercise}
+                disabled={!newExercise.templateId}
               >
                 Add Exercise
               </button>
@@ -405,6 +549,7 @@ export default function WorkoutStructure({ workout, weekIndex, workoutIndex, set
                   value={editingExercise.name}
                   onChange={(e) => setEditingExercise({ ...editingExercise, name: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  readOnly
                 />
               </div>
 
@@ -412,18 +557,12 @@ export default function WorkoutStructure({ workout, weekIndex, workoutIndex, set
                 <label htmlFor="edit-muscle-group" className="block text-sm font-medium text-gray-700 mb-1">
                   Muscle Group
                 </label>
-                <select
+                <input
                   id="edit-muscle-group"
                   value={editingExercise.muscle}
-                  onChange={(e) => setEditingExercise({ ...editingExercise, muscle: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  {muscleGroups.map((muscle) => (
-                    <option key={muscle} value={muscle}>
-                      {muscle}
-                    </option>
-                  ))}
-                </select>
+                  readOnly
+                />
               </div>
 
               <div>

@@ -5,6 +5,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Workout from "./components/workout"
 import WorkoutHeader from "./components/workout-header"
+import ProgramComplete from "./components/program-complete"
 import { Dumbbell } from "lucide-react"
 
 export default function WorkoutPage() {
@@ -13,6 +14,7 @@ export default function WorkoutPage() {
   const [program, setProgram] = useState(null)
   const [currentWorkout, setCurrentWorkout] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [isProgramComplete, setIsProgramComplete] = useState(false)
 
   useEffect(() => {
     setLoading(true)
@@ -29,8 +31,12 @@ export default function WorkoutPage() {
           .flatMap((week) => week.workouts)
           .find((workout) => workout.exercises.some((exercise) => exercise.sets.some((set) => !set.complete)))
 
+        // Check if all workouts in the program are complete
+        const allWorkoutsComplete = !nextWorkoutWithIncompleteSet
+
         setProgram(data)
-        setCurrentWorkout(nextWorkoutWithIncompleteSet)
+        setCurrentWorkout(nextWorkoutWithIncompleteSet || data.weeks[0].workouts[0]) // Default to first workout if all complete
+        setIsProgramComplete(allWorkoutsComplete)
         setLoading(false)
       })
       .catch((error) => {
@@ -57,7 +63,19 @@ export default function WorkoutPage() {
           .find((workout) => workout.exercises.some((exercise) => exercise.sets.some((set) => !set.complete)))
       }
 
-      setCurrentWorkout(updatedWorkout)
+      // Check if all workouts are complete
+      const allWorkoutsComplete = !program.weeks
+        .flatMap((week) => week.workouts)
+        .some((workout) => workout.exercises.some((exercise) => exercise.sets.some((set) => !set.complete)))
+
+      setIsProgramComplete(allWorkoutsComplete)
+
+      // If all workouts are complete but we still want to view one, keep the current selection
+      if (allWorkoutsComplete && currentWorkout) {
+        setCurrentWorkout(updatedWorkout || currentWorkout)
+      } else {
+        setCurrentWorkout(updatedWorkout)
+      }
     }
   }, [program, currentWorkout])
 
@@ -72,6 +90,11 @@ export default function WorkoutPage() {
     )
   }
 
+  // If program is complete, show completion screen
+  if (isProgramComplete && !currentWorkout?.feedbackId) {
+    return <ProgramComplete program={program} />
+  }
+
   return (
     <div className="w-full min-h-screen flex flex-col bg-gray-50">
       <div className="max-w-2xl mx-auto w-full flex flex-col flex-1">
@@ -81,7 +104,8 @@ export default function WorkoutPage() {
             setProgram={setProgram}
             currentWorkout={currentWorkout}
             setCurrentWorkout={setCurrentWorkout}
-            viewonly={false}
+            viewonly={!!currentWorkout?.feedbackId}
+            isProgramComplete={isProgramComplete}
           />
         )}
 
@@ -91,7 +115,7 @@ export default function WorkoutPage() {
             setProgram={setProgram}
             program={program}
             setCurrentWorkout={setCurrentWorkout}
-            viewonly={false}
+            viewonly={!!currentWorkout?.feedbackId}
           />
         </div>
       </div>

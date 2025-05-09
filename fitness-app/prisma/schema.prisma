@@ -24,6 +24,7 @@ model User {
   updatedAt     DateTime  @updatedAt
   accounts      Account[]
   sessions      Session[]
+  profilePicture   Bytes?
 
   currentProgramId String?
 
@@ -114,6 +115,9 @@ model ExerciseTemplate {
 
   muscleGroupId   String
   muscleGroup     MuscleGroup  @relation(fields: [muscleGroupId], references: [id])
+
+  shortDescription String?
+  videoUrl String?
 
   createdAt       DateTime     @default(now())
 

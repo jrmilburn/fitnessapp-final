@@ -9,11 +9,12 @@ export default function ExercisesPage() {
   const { data: session, status } = useSession()
   const [defaultExercises, setDefaultExercises] = useState([])
   const [userExercises, setUserExercises] = useState([])
+  const [muscleGroups, setMuscleGroups] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (status === "authenticated") {
-      fetchExerciseTemplates()
+      Promise.all([fetchExerciseTemplates(), fetchMuscleGroups()])
     }
   }, [status])
 
@@ -33,6 +34,21 @@ export default function ExercisesPage() {
       console.error("Error fetching exercise templates:", error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchMuscleGroups = async () => {
+    try {
+      const response = await fetch("/api/muscle-groups")
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch muscle groups")
+      }
+
+      const data = await response.json()
+      setMuscleGroups(data || [])
+    } catch (error) {
+      console.error("Error fetching muscle groups:", error)
     }
   }
 
@@ -73,13 +89,14 @@ export default function ExercisesPage() {
   }
 
   return (
-    <div className="max-h-[calc(100vh-112px)] bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Exercise Library</h1>
 
         <ExerciseLibrary
           defaultExercises={defaultExercises}
           userExercises={userExercises}
+          muscleGroups={muscleGroups}
           onTemplateCreate={handleTemplateCreate}
         />
       </div>

@@ -42,6 +42,7 @@ export async function GET() {
                       },
                     },
                   },
+                  MuscleFeedback: true
                 },
               },
             },

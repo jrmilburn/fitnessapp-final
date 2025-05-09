@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation"
 import { useSession, signIn, signOut } from "next-auth/react"
 import { ChevronDown, ChevronRight, LogOut, User, Settings, Menu, X } from 'lucide-react'
 import NAVIGATION from "./Navigation"
+import UserProfile from "./UserProfile"
 
 const Sidebar = ({ children }) => {
   const pathname = usePathname()
@@ -13,11 +14,18 @@ const Sidebar = ({ children }) => {
   const [openMenus, setOpenMenus] = useState({})
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
+  const [user, setUser] = useState({})
   const userMenuRef = useRef(null)
   const sidebarRef = useRef(null)
 
   // Determine which navigation to use based on user role
   const navigation =  NAVIGATION;
+
+  useEffect(() => {
+    fetch(`/api/user/${session.user.id}`)
+    .then(resp => resp.json())
+    .then(data => setUser(data))
+  }, [])
 
   // Close mobile sidebar when clicking outside
   useEffect(() => {
@@ -196,8 +204,10 @@ const Sidebar = ({ children }) => {
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                   className="flex items-center rounded-full text-sm focus:outline-none"
                 >
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400">
-                    <User className="h-5 w-5" />
+                  <div className="flex h-10 w-10 rounded-full items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400 overflow-hidden">
+                    <UserProfile
+                      userId={session.user.id}
+                    />
                   </div>
                 </button>
 
@@ -205,7 +215,7 @@ const Sidebar = ({ children }) => {
                   <div className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 dark:bg-slate-800 dark:ring-slate-700">
                     <div className="border-b border-slate-200 px-4 py-2 dark:border-slate-700">
                       <p className="text-sm font-medium text-slate-900 dark:text-slate-200">
-                        {session.user.name || "User"}
+                        {user.name || "User"}
                       </p>
                       <p className="text-xs text-slate-500 dark:text-slate-400">{session.user.email}</p>
                       <p className="mt-1 text-xs font-medium text-blue-600 dark:text-blue-400">

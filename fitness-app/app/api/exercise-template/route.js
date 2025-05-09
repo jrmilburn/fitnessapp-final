@@ -23,21 +23,34 @@ export async function POST(request) {
 
     // Parse the request body
     const body = await request.json()
-    const { name, muscle, description, isPublic } = body
+    const { name, muscleGroupId, description, shortDescription, videoUrl, isPublic } = body
 
     // Validate required fields
     if (!name || name.length < 2) {
       return NextResponse.json({ error: "Name must be at least 2 characters" }, { status: 400 })
     }
 
-    if (!muscle) {
+    if (!muscleGroupId) {
       return NextResponse.json({ error: "Muscle group is required" }, { status: 400 })
+    }
+
+    if (!shortDescription || shortDescription.length < 5) {
+      return NextResponse.json({ error: "Short description must be at least 5 characters" }, { status: 400 })
+    }
+
+    // Check if the muscle group exists
+    const muscleGroup = await prisma.muscleGroup.findUnique({
+      where: { id: muscleGroupId },
+    })
+
+    if (!muscleGroup) {
+      return NextResponse.json({ error: "Muscle group not found" }, { status: 404 })
     }
 
     // Check for duplicate exercise names for this user
     const existingExercise = await prisma.exerciseTemplate.findFirst({
       where: {
-        userId: user.id,
+        createdByUserId: user.id,
         name: {
           equals: name,
           mode: "insensitive", // Case-insensitive comparison
@@ -57,10 +70,15 @@ export async function POST(request) {
     const exerciseTemplate = await prisma.exerciseTemplate.create({
       data: {
         name,
-        muscle,
         description,
+        shortDescription,
+        videoUrl,
         isPublic,
-        userId: user.id,
+        createdByUserId: user.id,
+        muscleGroupId,
+      },
+      include: {
+        muscleGroup: true,
       },
     })
 
@@ -92,41 +110,44 @@ export async function GET(request) {
     // Get query parameters
     const { searchParams } = new URL(request.url)
     const type = searchParams.get("type") // 'default' or 'user'
+    const muscleGroupId = searchParams.get("muscleGroupId")
 
-    let exercises = []
+    // Build the where clause
+    let whereClause = {}
 
     if (type === "default") {
       // Get all public exercise templates
-      exercises = await prisma.exerciseTemplate.findMany({
-        where: {
-          isPublic: true,
-        },
-        orderBy: {
-          name: "asc",
-        },
-      })
+      whereClause = {
+        isPublic: true,
+      }
     } else if (type === "user") {
       // Get user's private exercise templates
-      exercises = await prisma.exerciseTemplate.findMany({
-        where: {
-          userId: user.id,
-          isPublic: false,
-        },
-        orderBy: {
-          name: "asc",
-        },
-      })
+      whereClause = {
+        createdByUserId: user.id,
+        isPublic: false,
+      }
     } else {
       // Get both public and user's private templates
-      exercises = await prisma.exerciseTemplate.findMany({
-        where: {
-          OR: [{ isPublic: true }, { userId: user.id, isPublic: false }],
-        },
-        orderBy: {
-          name: "asc",
-        },
-      })
+      whereClause = {
+        OR: [{ isPublic: true }, { createdByUserId: user.id }],
+      }
     }
+
+    // Add muscle group filter if provided
+    if (muscleGroupId) {
+      whereClause.muscleGroupId = muscleGroupId
+    }
+
+    // Fetch exercise templates with muscle group data
+    const exercises = await prisma.exerciseTemplate.findMany({
+      where: whereClause,
+      include: {
+        muscleGroup: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
+    })
 
     return NextResponse.json(exercises)
   } catch (error) {
@@ -171,7 +192,7 @@ export async function DELETE(request) {
     }
 
     // Check if the user owns the exercise or if they're an admin
-    if (exerciseTemplate.userId !== user.id && !session.user.isAdmin) {
+    if (exerciseTemplate.createdByUserId !== user.id && !session.user.isAdmin) {
       return NextResponse.json({ error: "You don't have permission to delete this exercise" }, { status: 403 })
     }
 

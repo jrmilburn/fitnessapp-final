@@ -23,7 +23,7 @@ export async function GET(request) {
 
     // Get query parameters for filtering
     const { searchParams } = new URL(request.url)
-    const muscle = searchParams.get("muscle")
+    const muscleGroupId = searchParams.get("muscleGroupId")
     const search = searchParams.get("search")
 
     // Build the where clause
@@ -31,9 +31,9 @@ export async function GET(request) {
       OR: [{ isPublic: true }, { createdByUserId: user.id }],
     }
 
-    // Add muscle filter if provided
-    if (muscle && muscle !== "All") {
-      whereClause.muscle = muscle
+    // Add muscle group filter if provided
+    if (muscleGroupId && muscleGroupId !== "all") {
+      whereClause.muscleGroupId = muscleGroupId
     }
 
     // Add search filter if provided
@@ -44,9 +44,12 @@ export async function GET(request) {
       }
     }
 
-    // Fetch exercise templates
+    // Fetch exercise templates with muscle group data
     const templates = await prisma.exerciseTemplate.findMany({
       where: whereClause,
+      include: {
+        muscleGroup: true,
+      },
       orderBy: {
         name: "asc",
       },
@@ -54,7 +57,7 @@ export async function GET(request) {
 
     // Separate default (public) and user templates
     const defaultExercises = templates.filter((template) => template.isPublic)
-    const userExercises = templates.filter((template) => !template.isPublic && template.userId === user.id)
+    const userExercises = templates.filter((template) => !template.isPublic && template.createdByUserId === user.id)
 
     return NextResponse.json({
       defaultExercises,

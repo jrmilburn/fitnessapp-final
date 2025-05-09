@@ -75,9 +75,12 @@ async function UpdateVolume(workoutId, userFatigue) {
             id: workoutId
         },
         include: {
-            exercises: true
+            exercises: true,
         }
     })
+
+    if(currentWorkout.nextWorkoutId) {
+
 
     const nextWorkout = await prisma.workout.update({
         where: {
@@ -138,6 +141,7 @@ async function UpdateVolume(workoutId, userFatigue) {
 
 
     }
+}
 
     
 
@@ -145,17 +149,48 @@ async function UpdateVolume(workoutId, userFatigue) {
 
 /**This is the volume regulation algorithm */
 
-function CalculateSets(currentSetCount, workload, jointpain, soreness, fatigue) {
-
-    const normalisedWorkload  = -0.08 * workload  + 1.2;
-    const normalisedJointPain = -0.08 * jointpain + 1.2;
-    const normalisedSoreness  = -0.08 * soreness  + 1.2;
-    const normalisedFatigue   = -0.08 * fatigue   + 1.2;
+// Define recovery factors for each muscle group (>1 = faster recovery, <1 = slower)
+const recoveryFactors = {
+    "Quads": 1.3,
+    "Hamstrings": 1.0,
+    "Calves": 1.4,
+    "Glutes": 1.2,
+    "Abs": 1.2,
+    "Back": 0.95,
+    "Chest": 0.8,
+    "Shoulders": 1.1,
+    "Biceps": 0.9,
+    "Triceps": 0.85
+  };
   
-    const volumeFactor = normalisedWorkload * normalisedJointPain * normalisedSoreness * normalisedFatigue;
-    
-    const newSetCount = currentSetCount * volumeFactor;
+  function CalculateSets(muscleGroup, workload, jointPain, soreness, fatigue) {
+    // Normalize inputs from 1–5 scale (baseline 3 = neutral)
+    const baseline = 3;
+    const maxDelta = 2;  // max deviation (5-3 or 1-3)
+    // Positive driver: workload (higher = more volume)
+    let workloadFactor = (workload - baseline) / maxDelta;    // range -1 to +1
+    // Negative drivers: joint pain, soreness, fatigue (higher = less volume)
+    let painFactor    = (jointPain - baseline) / maxDelta;    // -1 to +1
+    let sorenessFactor = (soreness - baseline) / maxDelta;    // -1 to +1
+    let fatigueFactor  = (fatigue - baseline) / maxDelta;     // -1 to +1
   
-    return newSetCount;
+    // Combine factors: start at 1.0 (baseline volume), add workload effect, subtract average of fatigue factors
+    let volumeFactor = 1.0 
+      + workloadFactor 
+      - ((painFactor + sorenessFactor + fatigueFactor) / 3);
+  
+    // **Incorporate muscle recovery rate:** multiply by muscle's recoveryFactor 
+    let recoveryFactor = recoveryFactors[muscleGroup] || 1.0;  // default 1.0 if not found
+    volumeFactor *= recoveryFactor;
+  
+    // Ensure volumeFactor is not negative (in case of extreme inputs)
+    if (volumeFactor < 0) volumeFactor = 0;
+  
+    // Calculate recommended sets (assuming a baselineSets value in the broader program)
+    const baselineSets = 10;  // example baseline for normalization (could be adjusted as needed)
+    let recommendedSets = Math.round(baselineSets * volumeFactor);
+  
+    return recommendedSets;
   }
+  
   

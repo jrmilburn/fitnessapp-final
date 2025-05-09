@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Plus, Info, Search, CheckCircle, AlertCircle } from "lucide-react"
+import { Plus, Search, CheckCircle, AlertCircle, ExternalLink } from "lucide-react"
 
 export default function ExerciseLibrary({ defaultExercises = [], userExercises = [], onTemplateCreate = null }) {
   // Tab state
@@ -20,8 +20,10 @@ export default function ExerciseLibrary({ defaultExercises = [], userExercises =
   // Form state
   const [formState, setFormState] = useState({
     name: "",
-    muscle: "",
+    muscleGroupId: "",
     description: "",
+    shortDescription: "",
+    videoUrl: "",
     isPublic: false,
   })
   const [formErrors, setFormErrors] = useState({})
@@ -33,11 +35,27 @@ export default function ExerciseLibrary({ defaultExercises = [], userExercises =
   // Toast notifications
   const [toasts, setToasts] = useState([])
 
+  // Add state for muscle groups:
+  const [muscleGroups, setMuscleGroups] = useState([])
+
+  // Add useEffect to fetch muscle groups:
+  useEffect(() => {
+    // Fetch muscle groups when component mounts
+    fetch("/api/muscle-groups")
+      .then((response) => response.json())
+      .then((data) => {
+        setMuscleGroups(data)
+      })
+      .catch((error) => {
+        console.error("Error fetching muscle groups:", error)
+      })
+  }, [])
+
   // Get unique muscles from the active tab's exercises
   const getUniqueMuscles = useCallback(() => {
     const exercises = selectedTab === 0 ? localDefaultExercises : localUserExercises
-    const muscles = [...new Set(exercises.map((exercise) => exercise.muscle))].sort()
-    return ["All", ...muscles]
+    const muscles = [...new Set(exercises.map((exercise) => exercise.muscleGroup.name))].sort()
+    return muscles
   }, [selectedTab, localDefaultExercises, localUserExercises])
 
   // Unique muscles for the dropdown
@@ -96,7 +114,7 @@ export default function ExerciseLibrary({ defaultExercises = [], userExercises =
 
     return exercises.filter((exercise) => {
       const matchesSearch = exercise.name.toLowerCase().includes(debouncedQuery.toLowerCase())
-      const matchesMuscle = selectedMuscle === "All" || exercise.muscle === selectedMuscle
+      const matchesMuscle = selectedMuscle === "All" || exercise.muscleGroup.name === selectedMuscle
       return matchesSearch && matchesMuscle
     })
   }, [selectedTab, localDefaultExercises, localUserExercises, debouncedQuery, selectedMuscle])
@@ -126,8 +144,16 @@ export default function ExerciseLibrary({ defaultExercises = [], userExercises =
       errors.name = "Name must be at least 2 characters"
     }
 
-    if (!formState.muscle) {
-      errors.muscle = "Please select a muscle group"
+    if (!formState.muscleGroupId) {
+      errors.muscleGroupId = "Please select a muscle group"
+    }
+
+    if (!formState.shortDescription || formState.shortDescription.length < 5) {
+      errors.shortDescription = "Short description must be at least 5 characters"
+    }
+
+    if (formState.videoUrl && !isValidUrl(formState.videoUrl)) {
+      errors.videoUrl = "Please enter a valid URL"
     }
 
     // Check for duplicate name in user exercises
@@ -143,6 +169,16 @@ export default function ExerciseLibrary({ defaultExercises = [], userExercises =
     return Object.keys(errors).length === 0
   }
 
+  // Validate URL
+  const isValidUrl = (url) => {
+    try {
+      new URL(url)
+      return true
+    } catch (e) {
+      return false
+    }
+  }
+
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -156,8 +192,11 @@ export default function ExerciseLibrary({ defaultExercises = [], userExercises =
       const newExercise = {
         id: `temp-${Date.now()}`, // Temporary ID until server assigns one
         name: formState.name,
-        muscle: formState.muscle,
+        muscleGroupId: formState.muscleGroupId,
         description: formState.description || null,
+        shortDescription: formState.shortDescription || null,
+        videoUrl: formState.videoUrl || null,
+        isPublic: formState.isPublic,
       }
 
       // POST to API
@@ -166,10 +205,7 @@ export default function ExerciseLibrary({ defaultExercises = [], userExercises =
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          ...newExercise,
-          isPublic: formState.isPublic,
-        }),
+        body: JSON.stringify(newExercise),
       })
 
       if (!response.ok) {
@@ -200,8 +236,10 @@ export default function ExerciseLibrary({ defaultExercises = [], userExercises =
       setIsModalOpen(false)
       setFormState({
         name: "",
-        muscle: "",
+        muscleGroupId: "",
         description: "",
+        shortDescription: "",
+        videoUrl: "",
         isPublic: false,
       })
     } catch (error) {
@@ -231,8 +269,10 @@ export default function ExerciseLibrary({ defaultExercises = [], userExercises =
     setIsModalOpen(false)
     setFormState({
       name: "",
-      muscle: "",
+      muscleGroupId: "",
       description: "",
+      shortDescription: "",
+      videoUrl: "",
       isPublic: false,
     })
     setFormErrors({})
@@ -267,6 +307,7 @@ export default function ExerciseLibrary({ defaultExercises = [], userExercises =
               value={selectedMuscle}
               onChange={(e) => setSelectedMuscle(e.target.value)}
             >
+              <option value="All">All Muscle Groups</option>
               {uniqueMuscles.map((muscle) => (
                 <option key={muscle} value={muscle}>
                   {muscle}
@@ -358,7 +399,7 @@ export default function ExerciseLibrary({ defaultExercises = [], userExercises =
         </div>
       </div>
 
-      {/* Custom Modal */}
+      {/* Create Exercise Modal */}
       <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-[10000] overflow-y-auto">
@@ -409,43 +450,89 @@ export default function ExerciseLibrary({ defaultExercises = [], userExercises =
 
                   {/* Muscle group select */}
                   <div>
-                    <label htmlFor="muscle" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <label
+                      htmlFor="muscleGroupId"
+                      className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    >
                       Muscle Group <span className="text-red-500">*</span>
                     </label>
                     <select
-                      name="muscle"
-                      id="muscle"
-                      value={formState.muscle}
+                      name="muscleGroupId"
+                      id="muscleGroupId"
+                      value={formState.muscleGroupId}
                       onChange={handleInputChange}
                       className={`mt-1 block w-full px-3 py-2 border ${
-                        formErrors.muscle ? "border-red-500" : "border-gray-300 dark:border-gray-700"
+                        formErrors.muscleGroupId ? "border-red-500" : "border-gray-300 dark:border-gray-700"
                       } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 sm:text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100`}
                     >
                       <option value="">Select a muscle group</option>
-                      {uniqueMuscles
-                        .filter((muscle) => muscle !== "All")
-                        .map((muscle) => (
-                          <option key={muscle} value={muscle}>
-                            {muscle}
-                          </option>
-                        ))}
+                      {muscleGroups.map((muscleGroup) => (
+                        <option key={muscleGroup.id} value={muscleGroup.id}>
+                          {muscleGroup.name}
+                        </option>
+                      ))}
                     </select>
-                    {formErrors.muscle && <p className="mt-1 text-sm text-red-500">{formErrors.muscle}</p>}
+                    {formErrors.muscleGroupId && (
+                      <p className="mt-1 text-sm text-red-500">{formErrors.muscleGroupId}</p>
+                    )}
                   </div>
 
-                  {/* Description textarea */}
+                  {/* Short Description input */}
+                  <div>
+                    <label
+                      htmlFor="shortDescription"
+                      className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    >
+                      Short Description <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="shortDescription"
+                      id="shortDescription"
+                      value={formState.shortDescription}
+                      onChange={handleInputChange}
+                      className={`mt-1 block w-full px-3 py-2 border ${
+                        formErrors.shortDescription ? "border-red-500" : "border-gray-300 dark:border-gray-700"
+                      } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 sm:text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100`}
+                      placeholder="Brief description (shown on cards)"
+                    />
+                    {formErrors.shortDescription && (
+                      <p className="mt-1 text-sm text-red-500">{formErrors.shortDescription}</p>
+                    )}
+                  </div>
+
+                  {/* Video URL input */}
+                  <div>
+                    <label htmlFor="videoUrl" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Video URL (optional)
+                    </label>
+                    <input
+                      type="text"
+                      name="videoUrl"
+                      id="videoUrl"
+                      value={formState.videoUrl}
+                      onChange={handleInputChange}
+                      className={`mt-1 block w-full px-3 py-2 border ${
+                        formErrors.videoUrl ? "border-red-500" : "border-gray-300 dark:border-gray-700"
+                      } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 sm:text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100`}
+                      placeholder="e.g., https://youtube.com/watch?v=..."
+                    />
+                    {formErrors.videoUrl && <p className="mt-1 text-sm text-red-500">{formErrors.videoUrl}</p>}
+                  </div>
+
+                  {/* Full Description textarea */}
                   <div>
                     <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Description / Video URL (optional)
+                      Full Description (optional)
                     </label>
                     <textarea
                       name="description"
                       id="description"
-                      rows={3}
+                      rows={4}
                       value={formState.description}
                       onChange={handleInputChange}
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 sm:text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                      placeholder="Add a description or video URL..."
+                      placeholder="Detailed instructions, form cues, etc."
                     />
                   </div>
 
@@ -518,48 +605,209 @@ export default function ExerciseLibrary({ defaultExercises = [], userExercises =
 
 // Exercise Card Component
 function ExerciseCard({ exercise }) {
-  const [showTooltip, setShowTooltip] = useState(false)
+  const [showDetails, setShowDetails] = useState(false)
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow duration-200"
-    >
-      <div className="p-4">
-        <div className="flex justify-between items-start">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">{exercise.name}</h3>
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        onClick={() => setShowDetails(true)}
+        className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow duration-200 cursor-pointer h-full flex flex-col"
+      >
+        <div className="p-4 flex-1 flex flex-col">
+          <div className="flex-1">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">{exercise.name}</h3>
+            {/*exercise.shortDescription && (
+              <p className="text-gray-500 dark:text-gray-400 text-sm line-clamp-2">{exercise.shortDescription}</p>
+            )*/}
+          </div>
+          <div className="mt-4 pt-2 border-t border-gray-100 dark:border-gray-700">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-100">
+              {exercise.muscleGroup.name}
+            </span>
+          </div>
+        </div>
+      </motion.div>
 
-          {exercise.description && (
-            <div className="relative">
-              <button
-                type="button"
-                className="text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
-                onMouseEnter={() => setShowTooltip(true)}
-                onMouseLeave={() => setShowTooltip(false)}
-                onClick={() => setShowTooltip(!showTooltip)}
-              >
-                <Info className="h-5 w-5" />
-              </button>
+      {/* Exercise Details Modal */}
+      {showDetails && (
+        <div className="fixed inset-0 z-[10001]">
+          <div className="min-h-screen px-4 text-center">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/30 dark:bg-opacity-50 z-10"
+              onClick={() => setShowDetails(false)}
+            />
 
-              {/* Tooltip */}
-              {showTooltip && (
-                <div className="absolute z-10 right-0 mt-2 w-64 p-2 bg-gray-800 dark:bg-gray-700 text-white text-sm rounded shadow-lg">
-                  {exercise.description}
+            {/* This element is to trick the browser into centering the modal contents. */}
+            <span className="inline-block h-screen align-middle" aria-hidden="true">
+              &#8203;
+            </span>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              className="inline-block w-full max-w-3xl p-6 my-8 overflow-y-auto max-h-[calc(100vh-120px)] text-left align-middle bg-white dark:bg-gray-800 rounded-2xl shadow-xl transform transition-all z-20 relative"
+            >
+              <div className="flex justify-between items-start">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">{exercise.name}</h3>
+                <button
+                  onClick={() => setShowDetails(false)}
+                  className="text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="mt-2">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-100">
+                  {exercise.muscleGroup.name}
+                </span>
+              </div>
+
+              {/* Short Description */}
+              {exercise.shortDescription && (
+                <div className="mt-4">
+                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"><strong>Summary</strong></h4>
+                  <p className="text-gray-600 dark:text-gray-400">{exercise.shortDescription}</p>
                 </div>
               )}
-            </div>
-          )}
-        </div>
 
-        <div className="mt-2">
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-100">
-            {exercise.muscle}
-          </span>
+              {/* Video Embed */}
+              {exercise.videoUrl && (
+                <div className="mt-6">
+                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"><strong>Educational Video</strong></h4>
+                  <div className="relative w-full h-[400px] overflow-hidden rounded-lg">
+                    <VideoEmbed url={exercise.videoUrl} className="absolute top-0 left-0 w-full h-full object-cover" />
+                  </div>
+                </div>
+              )}
+
+                            {/* External Video Link (if embedding fails) */}
+              {exercise.videoUrl && (
+                <div className="mt-4">
+                  <a
+                    href={exercise.videoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                  >
+                    <ExternalLink className="h-4 w-4 mr-1" />
+                    Open video in new tab
+                  </a>
+                </div>
+              )}
+
+              {/* Full Description */}
+              {exercise.description ? (
+                <div className="mt-6">
+                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"><strong>Full Description</strong></h4>
+                  <div className="prose prose-sm dark:prose-invert max-w-none">
+                    <p className="text-gray-600 dark:text-gray-400 whitespace-pre-line">{exercise.description}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-6 text-gray-500 dark:text-gray-400 italic">No detailed description available.</div>
+              )}
+
+              <div className="mt-6 flex justify-end">
+                <button
+                  type="button"
+                  className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-blue-600 dark:bg-blue-500 border border-transparent rounded-md shadow-sm hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+                  onClick={() => setShowDetails(false)}
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
+// Video Embed Component
+function VideoEmbed({ url }) {
+  // Extract video ID from YouTube URL
+  const getYouTubeEmbedUrl = (url) => {
+    try {
+      const videoId = url.match(
+        /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/,
+      )?.[1]
+      return videoId ? `https://www.youtube.com/embed/${videoId}` : null
+    } catch (error) {
+      return null
+    }
+  }
+
+  // Extract video ID from Vimeo URL
+  const getVimeoEmbedUrl = (url) => {
+    try {
+      const videoId = url.match(/vimeo\.com\/(?:.*\/)?([0-9]+)/)?.[1]
+      return videoId ? `https://player.vimeo.com/video/${videoId}` : null
+    } catch (error) {
+      return null
+    }
+  }
+
+  // Determine the embed URL based on the video platform
+  const getEmbedUrl = (url) => {
+    const youtubeEmbed = getYouTubeEmbedUrl(url)
+    if (youtubeEmbed) return youtubeEmbed
+
+    const vimeoEmbed = getVimeoEmbedUrl(url)
+    if (vimeoEmbed) return vimeoEmbed
+
+    return null
+  }
+
+  const embedUrl = getEmbedUrl(url)
+
+  if (!embedUrl) {
+    return (
+      <div className="flex items-center justify-center h-full bg-gray-100 dark:bg-gray-700 rounded-lg">
+        <div className="text-center p-4">
+          <p className="text-gray-500 dark:text-gray-400 text-sm">
+            Unable to embed video.{" "}
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              Open video in new tab
+            </a>
+          </p>
         </div>
       </div>
-    </motion.div>
+    )
+  }
+
+  return (
+    <iframe
+      src={embedUrl}
+      title="Video"
+      className="w-full h-full"
+      frameBorder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowFullScreen
+    ></iframe>
   )
 }
 

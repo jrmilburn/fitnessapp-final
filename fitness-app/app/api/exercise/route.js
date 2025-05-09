@@ -1,338 +1,284 @@
-import { NextResponse } from "next/server";
-import { prisma } from "../../../lib/prisma";
+import { NextResponse } from "next/server"
+import { prisma } from "../../../lib/prisma"
+import { getServerSession } from "next-auth"
+import { authOptions } from "../auth/[...nextauth]/route"
 
+// Update an exercise
 export async function PUT(request) {
-  const { name, muscle, workoutId, all, currentName } = await request.json();
-
-  console.log(name, muscle, workoutId, all);
-
-  if (all) {
-    // Fetch the current workout, including its week info and exercises.
-    const workout = await prisma.workout.findUnique({
-      where: { id: workoutId },
-      include: { 
-        week: true,
-        exercises: true 
-      },
-    });
-
-    if (!workout) {
-      return NextResponse.json({ error: "Workout not found" }, { status: 404 });
+  try {
+    // Authenticate the user
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Identify the exercise in this workout by the provided muscle.
-    const currentExercise = workout.exercises.find(ex => ex.name === currentName);
+    // Get the user
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { id: true, currentProgramId: true },
+    })
 
-    console.log(currentExercise);
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 })
+    }
+
+    // Get request body
+    const { exerciseId, templateId, updateAll, workoutId } = await request.json()
+
+    // Get the exercise template
+    const template = await prisma.exerciseTemplate.findUnique({
+      where: { id: templateId },
+      include: { muscleGroup: true },
+    })
+
+    if (!template) {
+      return NextResponse.json({ error: "Exercise template not found" }, { status: 404 })
+    }
+
+    // Get the current exercise
+    const currentExercise = await prisma.exercise.findUnique({
+      where: { id: exerciseId },
+      include: { workout: { include: { week: true } } },
+    })
 
     if (!currentExercise) {
-      return NextResponse.json({ error: "Exercise not found in workout" }, { status: 404 });
+      return NextResponse.json({ error: "Exercise not found" }, { status: 404 })
     }
-    const keyName = currentExercise.name;
-    const workoutNo = workout.workoutNo;
 
-    // Update all exercises in the same program, in workouts with the same workoutNo,
-    // and where the week number is greater than or equal to the current workout's week.
-    // Only exercises that originally have the same name (keyName) will be updated.
-    const updateResult = await prisma.exercise.updateMany({
+    // Verify the exercise belongs to the user's current program
+    const workout = await prisma.workout.findFirst({
       where: {
-        name: keyName,
-        workout: {
-          workoutNo: workoutNo,
-          week: {
-            programId: workout.week.programId,
-            weekNo: { gte: workout.week.weekNo },
+        id: workoutId,
+        week: {
+          program: {
+            id: user.currentProgramId,
           },
         },
       },
-      data: {
-        name: name,
-        muscle: muscle,
-      },
-    });
-
-    const newProgram = await prisma.program.findUnique({
-      where: {
-        id: updateResult.workout.week.programId
-      },
-      include: {
-        weeks: {
-          orderBy: {
-            weekNo: 'asc'
-          },
-          include: {
-            workouts: {
-              orderBy: {
-                workoutNo: 'asc'
-              },
-              include: {
-                exercises: {
-                  orderBy: {
-                    exerciseNo: 'asc'
-                  },
-                  include: {
-                    sets: {
-                      orderBy: {
-                        setNo: 'asc'
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
     })
 
-    return NextResponse.json({
-      message: "Exercise replaced for all remaining workouts",
-      count: updateResult.count,
-      program: newProgram
-    });
-  } else {
-    // One-off replacement: update only the specified exercise in the current workout.
-    
-    // Fetch the current workout, including its week info and exercises.
-    const workout = await prisma.workout.findUnique({
-      where: { id: workoutId },
-      include: { 
-        week: true,
-        exercises: true 
-      },
-    });
-  
     if (!workout) {
-      return NextResponse.json({ error: "Workout not found" }, { status: 404 });
+      return NextResponse.json({ error: "Workout not found or not authorized" }, { status: 404 })
     }
-  
-    // Identify the exercise in this workout by the provided currentName.
-    const currentExercise = workout.exercises.find(ex => ex.name === currentName);
-  
-    if (!currentExercise) {
-      return NextResponse.json({ error: "Exercise not found in workout" }, { status: 404 });
-    }
-  
-    // Update only this exercise.
-    const updatedExercise = await prisma.exercise.update({
-      where: { id: currentExercise.id },
-      data: {
-        name: name,
-        muscle: muscle,
-      },
-      include: {
-        workout: {
-          include: {
-            week: true
-          }
-        }
-      }
-    });
-  
-    // Fetch the updated program details.
-    const newProgram = await prisma.program.findUnique({
-      where: {
-        id: updatedExercise.workout.week.programId
-      },
-      include: {
-        weeks: {
-          orderBy: {
-            weekNo: 'asc'
-          },
-          include: {
-            workouts: {
-              orderBy: {
-                workoutNo: 'asc'
-              },
-              include: {
-                exercises: {
-                  orderBy: {
-                    exerciseNo: 'asc'
-                  },
-                  include: {
-                    sets: {
-                      orderBy: {
-                        setNo: 'asc'
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    })
-  
-    return NextResponse.json({
-      message: "Exercise replaced for the current workout",
-      exerciseId: updatedExercise.id,
-      program: newProgram
-    });
-  }
-  
-}
 
+    if (updateAll) {
+      // Get all workouts in the current and future weeks
+      const currentWeekNo = currentExercise.workout.week.weekNo
 
-export async function POST(request) {
-
-    const { workoutId, name, muscle } = await request.json();
-
-    const exercises = await prisma.exercise.findMany({
+      const workouts = await prisma.workout.findMany({
         where: {
-            workoutId: workoutId
-        }
-    })
-
-    const newExercise = await prisma.exercise.create({
-        data: {
-            name: name,
-            muscle: muscle,
-            workoutId: workoutId,
-            exerciseNo: exercises.length + 1
+          week: {
+            programId: user.currentProgramId,
+            weekNo: {
+              gte: currentWeekNo,
+            },
+          },
+          workoutNo: currentExercise.workout.workoutNo,
         },
         include: {
-          workout: {
-            include: {
-              week: true
-            }
-          }
-        }
-    })
+          exercises: {
+            where: {
+              exerciseNo: currentExercise.exerciseNo,
+            },
+          },
+        },
+      })
 
-    for (let i = 0; i < 2; i++) {
-      await prisma.set.create({
+      // Update all matching exercises in current and future workouts
+      const updatePromises = workouts.flatMap((workout) =>
+        workout.exercises.map((exercise) =>
+          prisma.exercise.update({
+            where: { id: exercise.id },
+            data: {
+              name: template.name,
+              muscle: template.muscleGroup.name,
+              templateId: template.id,
+            },
+          }),
+        ),
+      )
+
+      await Promise.all(updatePromises)
+    } else {
+      // Update only the current exercise
+      await prisma.exercise.update({
+        where: { id: exerciseId },
         data: {
-          setNo: i + 1,
-          exerciseId: newExercise.id
-        }
+          name: template.name,
+          muscle: template.muscleGroup.name,
+          templateId: template.id,
+        },
       })
     }
 
-    const newProgram = await prisma.program.findUnique({
+    // Fetch the updated program
+    const updatedProgram = await prisma.program.findUnique({
       where: {
-        id: newExercise.workout.week.programId
+        id: user.currentProgramId,
       },
       include: {
         weeks: {
           orderBy: {
-            weekNo: 'asc'
+            weekNo: "asc",
           },
           include: {
             workouts: {
               orderBy: {
-                workoutNo: 'asc'
+                workoutNo: "asc",
               },
               include: {
                 exercises: {
                   orderBy: {
-                    exerciseNo: 'asc'
+                    exerciseNo: "asc",
                   },
                   include: {
                     sets: {
                       orderBy: {
-                        setNo: 'asc'
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    })
-
-    return NextResponse.json({
-        status: "Exercise created successfully",
-        exercise: newExercise,
-        program: newProgram
-    })
-
-}
-
-export async function DELETE(request) {
-
-  const { exerciseId } = await request.json();
-
-  await prisma.set.deleteMany({
-    where: {
-      exerciseId: exerciseId
-    }
-  })
-
-  const deletedExercise = await prisma.exercise.delete({
-    where: {
-      id: exerciseId
-    },
-    include: {
-      workout: {
-        include: {
-          week: true
-        }
-      }
-    }
-  })
-  
-
-  const newProgram = await prisma.program.findUnique({
-    where: {
-      id: deletedExercise.workout.week.programId
-    },
-    include: {
-      weeks: {
-        orderBy: {
-          weekNo: 'asc'
-        },
-        include: {
-          workouts: {
-            orderBy: {
-              workoutNo: 'asc'
-            },
-            include: {
-              exercises: {
-                orderBy: {
-                  exerciseNo: 'asc'
+                        setNo: "asc",
+                      },
+                    },
+                  },
                 },
-                include: {
-                  sets: {
-                    orderBy: {
-                      setNo: 'asc'
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  })
+              },
+            },
+          },
+        },
+      },
+    })
 
-  return NextResponse.json({
-    message: "Exercise replaced for all remaining workouts",
-    program: newProgram
-  });
-
+    return NextResponse.json({ success: true, program: updatedProgram })
+  } catch (error) {
+    console.error("Error updating exercise:", error)
+    return NextResponse.json({ error: "Failed to update exercise" }, { status: 500 })
+  }
 }
 
-export async function GET() {
+// Delete an exercise
+export async function DELETE(request) {
   try {
-    const exercises = await prisma.exercise.findMany({
-      distinct: ['name'], // Adjust the field name(s) as needed
-    });
+    // Authenticate the user
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
 
-    return new Response(JSON.stringify(exercises), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    // Get the user
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { id: true, currentProgramId: true },
+    })
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 })
+    }
+
+    // Get request body
+    const { exerciseId } = await request.json()
+
+    // Get the exercise
+    const exercise = await prisma.exercise.findUnique({
+      where: { id: exerciseId },
+      include: {
+        workout: {
+          include: {
+            week: true,
+          },
+        },
+        sets: true,
+      },
+    })
+
+    if (!exercise) {
+      return NextResponse.json({ error: "Exercise not found" }, { status: 404 })
+    }
+
+    // Verify the exercise belongs to the user's current program
+    const programCheck = await prisma.program.findFirst({
+      where: {
+        id: user.currentProgramId,
+        weeks: {
+          some: {
+            id: exercise.workout.weekId,
+          },
+        },
+      },
+    })
+
+    if (!programCheck) {
+      return NextResponse.json({ error: "Not authorized to delete this exercise" }, { status: 403 })
+    }
+
+    // Delete the exercise's sets first
+    await prisma.set.deleteMany({
+      where: {
+        exerciseId: exerciseId,
+      },
+    })
+
+    // Delete the exercise
+    await prisma.exercise.delete({
+      where: {
+        id: exerciseId,
+      },
+    })
+
+    // Update exerciseNo for remaining exercises in the workout
+    const remainingExercises = await prisma.exercise.findMany({
+      where: {
+        workoutId: exercise.workoutId,
+      },
+      orderBy: {
+        exerciseNo: "asc",
+      },
+    })
+
+    const updatePromises = remainingExercises.map((ex, index) =>
+      prisma.exercise.update({
+        where: { id: ex.id },
+        data: { exerciseNo: index },
+      }),
+    )
+
+    await Promise.all(updatePromises)
+
+    // Fetch the updated program
+    const updatedProgram = await prisma.program.findUnique({
+      where: {
+        id: user.currentProgramId,
+      },
+      include: {
+        weeks: {
+          orderBy: {
+            weekNo: "asc",
+          },
+          include: {
+            workouts: {
+              orderBy: {
+                workoutNo: "asc",
+              },
+              include: {
+                exercises: {
+                  orderBy: {
+                    exerciseNo: "asc",
+                  },
+                  include: {
+                    sets: {
+                      orderBy: {
+                        setNo: "asc",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    })
+
+    return NextResponse.json({ success: true, program: updatedProgram })
   } catch (error) {
-    return new Response(
-      JSON.stringify({ error: error.message || 'Error fetching exercises' }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
+    console.error("Error deleting exercise:", error)
+    return NextResponse.json({ error: "Failed to delete exercise" }, { status: 500 })
   }
 }

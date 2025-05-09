@@ -18,6 +18,7 @@ export default function ProtectedRoute({ children }) {
   // Define paths that do not require authentication
   const unprotectedPaths = ["/auth/login", "/auth/register", "/"];
   const isUnprotectedPath = unprotectedPaths.includes(pathname);
+  const isLandingPage = pathname === "/";
 
   useEffect(() => {
     // Ensure the code runs only on the client side
@@ -26,6 +27,11 @@ export default function ProtectedRoute({ children }) {
 
   useEffect(() => {
     // Redirect unauthenticated users to /login if they're accessing protected routes
+
+    if(isLandingPage) {
+      return
+    }
+
     if (status === "unauthenticated" && !isUnprotectedPath && isClient) {
       router.push("/auth/login");
     } else if (status === "authenticated" && isUnprotectedPath) {
@@ -33,7 +39,7 @@ export default function ProtectedRoute({ children }) {
       router.push("/workout")
 
     }
-  }, [status, router, isUnprotectedPath, isClient]);
+  }, [status, router, isUnprotectedPath, isClient, isLandingPage]);
 
   useEffect(() => {
     // Minimum display time for the splash screen (1 second)
@@ -44,7 +50,7 @@ export default function ProtectedRoute({ children }) {
     return () => clearTimeout(timer);
   }, [status]);
 
-  if(isUnprotectedPath) {
+  if(isUnprotectedPath || isLandingPage) {
     return <>{children}</>
 
   } else if (status === "authenticated") {

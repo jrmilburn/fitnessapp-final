@@ -8,7 +8,7 @@ import { motion } from "framer-motion"
 import { Dumbbell, Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react"
 import { toast } from "react-hot-toast"
 
-export default function SignIn() {
+export default function Register() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -40,6 +40,23 @@ export default function SignIn() {
     setIsLoading(true)
 
     try {
+      // Register the user
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        toast.error(data.error || "Registration failed")
+        setErrors({ auth: data.error || "Registration failed" })
+        setIsLoading(false)
+        return
+      }
+
+      // Sign in the user
       const result = await signIn("credentials", {
         email,
         password,
@@ -47,14 +64,15 @@ export default function SignIn() {
       })
 
       if (result.error) {
-        toast.error("Invalid email or password")
-        setErrors({ auth: "Invalid email or password" })
+        toast.error("Sign in failed after registration")
+        setErrors({ auth: "Sign in failed after registration" })
       } else {
-        toast.success("Signed in successfully")
-        router.push("/workout")
+        toast.success("Account created successfully")
+        // Redirect to onboarding instead of workout
+        router.push("/auth/onboarding")
       }
     } catch (error) {
-      toast.error("An error occurred during sign in")
+      toast.error("An error occurred during registration")
       setErrors({ auth: "An error occurred. Please try again." })
     } finally {
       setIsLoading(false)
@@ -77,7 +95,7 @@ export default function SignIn() {
               </div>
             </div>
 
-            <h1 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-6">Welcome back</h1>
+            <h1 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-6">Create your account</h1>
 
             {errors.auth && (
               <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
@@ -122,7 +140,7 @@ export default function SignIn() {
                     id="password"
                     name="password"
                     type={showPassword ? "text" : "password"}
-                    autoComplete="current-password"
+                    autoComplete="new-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className={`block w-full pl-10 pr-10 py-2.5 border ${
@@ -145,27 +163,16 @@ export default function SignIn() {
                 {errors.password && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.password}</p>}
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <input
-                    id="remember-me"
-                    name="remember-me"
-                    type="checkbox"
-                    className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
-                  />
-                  <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                    Remember me
-                  </label>
-                </div>
-
-                <div className="text-sm">
-                  <Link
-                    href="#"
-                    className="font-medium text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
-                  >
-                    Forgot password?
-                  </Link>
-                </div>
+              <div className="flex items-center">
+                <input
+                  id="accept-terms"
+                  name="accept-terms"
+                  type="checkbox"
+                  className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
+                />
+                <label htmlFor="accept-terms" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                  I want to receive updates via email
+                </label>
               </div>
 
               <button
@@ -177,7 +184,7 @@ export default function SignIn() {
                   <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 ) : (
                   <>
-                    Sign in
+                    Create account
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </>
                 )}
@@ -187,12 +194,12 @@ export default function SignIn() {
 
           <div className="px-8 py-6 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-700">
             <p className="text-center text-sm text-gray-600 dark:text-gray-400">
-              Don't have an account?{" "}
+              Already have an account?{" "}
               <Link
-                href="/auth/register"
+                href="/auth/login"
                 className="font-medium text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300"
               >
-                Sign up
+                Sign in
               </Link>
             </p>
           </div>
