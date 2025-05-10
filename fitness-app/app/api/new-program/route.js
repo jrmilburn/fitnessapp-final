@@ -20,122 +20,127 @@ export async function POST(request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
 
-    const { weekLayout, programStructure, autoRegulated } = await request.json()
+    const { templateId } = await request.json()
 
-    const newProgram = await CreateProgram(user.id, weekLayout, programStructure, autoRegulated)
-
-    // Update user current program
-    await prisma.user.update({
-      where: {
-        id: user.id,
+    // Fetch the template with all related data
+    const template = await prisma.programTemplate.findUnique({
+      where: { id: templateId },
+      include: {
+        weekTemplates: {
+          orderBy: { weekNo: "asc" },
+          include: {
+            workoutTemplates: {
+              orderBy: { dayNo: "asc" },
+              include: {
+                exerciseSlots: {
+                  orderBy: { order: "asc" },
+                  include: {
+                    exerciseTemplate: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
+    })
+
+    if (!template) {
+      return NextResponse.json({ error: "Template not found" }, { status: 404 })
+    }
+
+    // Check if user has access to this template
+    if (!template.isPublic && template.createdById !== user.id) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 })
+    }
+
+    // Create the program
+    const program = await prisma.program.create({
       data: {
-        currentProgramId: newProgram.id,
+        name: template.name,
+        comments: template.comments,
+        length: template.length,
+        days: template.daysPerWeek,
+        autoRegulated: template.autoRegulated,
+        userId: user.id,
       },
+    })
+
+    // For auto-regulated programs, we only need to create the first week
+    const weeksToCreate = template.autoRegulated ? template.weekTemplates.slice(0, 1) : template.weekTemplates
+
+    // Create weeks and workouts
+    for (const weekTemplate of weeksToCreate) {
+      const week = await prisma.week.create({
+        data: {
+          weekNo: weekTemplate.weekNo,
+          programId: program.id,
+        },
+      })
+
+      for (const workoutTemplate of weekTemplate.workoutTemplates) {
+        const workout = await prisma.workout.create({
+          data: {
+            name: workoutTemplate.name,
+            workoutNo: workoutTemplate.dayNo,
+            weekId: week.id,
+            programmed: true,
+          },
+        })
+
+        // Create exercises and sets
+        for (const slot of workoutTemplate.exerciseSlots) {
+          const exercise = await prisma.exercise.create({
+            data: {
+              name: slot.exerciseTemplate.name,
+              muscle: slot.exerciseTemplate.muscleGroup?.name || "Unknown",
+              exerciseNo: slot.order,
+              workoutId: workout.id,
+              templateId: slot.templateId,
+            },
+          })
+
+          // Create sets
+          for (let i = 0; i < slot.targetSets; i++) {
+            await prisma.set.create({
+              data: {
+                setNo: i + 1,
+                reps: 0, // Default values
+                weight: 0, // Default values
+                exerciseId: exercise.id,
+              },
+            })
+          }
+        }
+      }
+    }
+
+    // If this is auto-regulated, we need to create placeholder weeks for the rest of the program
+    if (template.autoRegulated && template.length > 1) {
+      // Create remaining weeks with empty workouts
+      for (let weekNo = 2; weekNo <= template.length; weekNo++) {
+        await prisma.week.create({
+          data: {
+            weekNo,
+            programId: program.id,
+          },
+        })
+      }
+    }
+
+    // Set this as the user's current program
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { currentProgramId: program.id },
     })
 
     return NextResponse.json({
       status: 201,
       message: "Program created successfully",
+      programId: program.id,
     })
   } catch (error) {
     console.error("Error creating program:", error)
-    return NextResponse.json({ error: "Failed to create program" }, { status: 500 })
+    return NextResponse.json({ error: "Failed to create program", details: error.message }, { status: 500 })
   }
-}
-
-async function CreateProgram(userId, weekLayout, programStructure, autoRegulated) {
-  // Create the program
-  const newProgram = await prisma.program.create({
-    data: {
-      name: programStructure.name,
-      comments: programStructure.comments,
-      length: Number.parseInt(programStructure.length, 10),
-      days: Number.parseInt(programStructure.days, 10),
-      userId: userId,
-      autoRegulated: autoRegulated,
-    },
-  })
-
-  const weekWorkoutMap = [] // This will store each week's mapping: { workoutNo: workoutId }
-
-  for (let i = 0; i < weekLayout.length; i++) {
-    // Create the week record
-    const newWeek = await prisma.week.create({
-      data: {
-        weekNo: i + 1,
-        programId: newProgram.id,
-      },
-    })
-
-    const currentWeekWorkoutMap = {} // Maps workoutNo => workout.id for the current week
-
-    for (let j = 0; j < weekLayout[i].workouts.length; j++) {
-      // Create the workout record
-      const newWorkout = await prisma.workout.create({
-        data: {
-          name: weekLayout[i].workouts[j].name,
-          workoutNo: weekLayout[i].workouts[j].workoutNo,
-          weekId: newWeek.id,
-          programmed: i + 1 === 1 || !autoRegulated,
-        },
-      })
-
-      // If this isn't the first week, attempt to find a matching workout from the previous week.
-      if (i > 0) {
-        const prevWeekMap = weekWorkoutMap[i - 1]
-        const previousWorkoutId = prevWeekMap[newWorkout.workoutNo]
-        if (previousWorkoutId) {
-          // Update the current workout to reference the previous workout.
-          await prisma.workout.update({
-            where: { id: newWorkout.id },
-            data: { previousWorkoutId: previousWorkoutId },
-          })
-
-          // Update the previous workout to reference the current workout as its next.
-          await prisma.workout.update({
-            where: { id: previousWorkoutId },
-            data: { nextWorkoutId: newWorkout.id },
-          })
-        }
-      }
-
-      // Save the current workout in the mapping for later reference.
-      currentWeekWorkoutMap[newWorkout.workoutNo] = newWorkout.id
-
-      // Create exercises for this workout.
-      for (let k = 0; k < weekLayout[i].workouts[j].exercises.length; k++) {
-        const exerciseData = weekLayout[i].workouts[j].exercises[k]
-
-        // Create the exercise with template reference
-        const newExercise = await prisma.exercise.create({
-          data: {
-            name: exerciseData.name,
-            muscle: exerciseData.muscle,
-            exerciseNo: k + 1,
-            workoutId: newWorkout.id,
-            templateId: exerciseData.templateId, // Link to the template
-          },
-        })
-
-        // Create sets for the exercise.
-        for (let l = 0; l < exerciseData.sets.length && (!newProgram.autoRegulated || newWeek.weekNo === 1); l++) {
-          await prisma.set.create({
-            data: {
-              setNo: l + 1,
-              weight: exerciseData.sets[l].weight || 0,
-              reps: exerciseData.sets[l].reps || 0,
-              complete: false,
-              exerciseId: newExercise.id,
-            },
-          })
-        }
-      }
-    }
-
-    // Add the current week's mapping to the overall array.
-    weekWorkoutMap.push(currentWeekWorkoutMap)
-  }
-
-  return newProgram
 }

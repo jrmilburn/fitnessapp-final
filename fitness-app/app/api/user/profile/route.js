@@ -65,7 +65,7 @@ export async function PUT(request) {
     }
 
     // Process profile picture if provided
-    if (profilePicture && profilePicture instanceof Blob) {
+    if (profilePicture && profilePicture) {
       // Convert the file to a Buffer
       const buffer = Buffer.from(await profilePicture.arrayBuffer())
       updateData.profilePicture = buffer

@@ -173,7 +173,7 @@ const Sidebar = ({ children }) => {
 
         {/* Sidebar footer */}
         <div className="absolute bottom-0 w-full border-t border-slate-200 p-4 text-center text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
-          © Caribeae Swimming Academy {new Date().getFullYear()}
+          © Joe Milburn {new Date().getFullYear()}
         </div>
       </aside>
 
@@ -260,7 +260,7 @@ const Sidebar = ({ children }) => {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto max-h-[calc(100vh-64px)] p-[24px]">{children}</main>
+        <main className="flex-1 overflow-y-auto max-h-[calc(100vh-64px)] px-4 py-4">{children}</main>
       </div>
     </div>
   )

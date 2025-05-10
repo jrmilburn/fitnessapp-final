@@ -18,6 +18,8 @@ export async function GET(
       select: { profilePicture: true },
     });
 
+    console.log(user);
+
     if (!user?.profilePicture) {
       return NextResponse.json(
         { message: 'Profile picture not found' },

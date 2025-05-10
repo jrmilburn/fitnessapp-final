@@ -18,6 +18,7 @@ export default function UserProfile({ userId }) {
         if (!res.ok) throw new Error('Fetch failed');
 
         const { profilePictureUrl } = await res.json();
+
         if (!cancelled) setSrc(profilePictureUrl || null);
       } catch (err) {
         console.error(err);

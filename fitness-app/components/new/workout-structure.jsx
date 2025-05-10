@@ -405,7 +405,7 @@ export default function WorkoutStructure({ workout, weekIndex, workoutIndex, set
                 {isLoading ? (
                   <div className="p-4 text-center">Loading exercise templates...</div>
                 ) : filteredTemplates.length > 0 ? (
-                  <div className="max-h-144 overflow-y-auto">
+                  <div className="max-h-84 overflow-y-auto">
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50 sticky top-0">
                         <tr>

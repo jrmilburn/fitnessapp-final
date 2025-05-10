@@ -14,22 +14,23 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  password      String?
-  emailVerified DateTime?
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  accounts      Account[]
-  sessions      Session[]
-  profilePicture   Bytes?
+  id             String    @id @default(cuid())
+  name           String?
+  email          String?   @unique
+  password       String?
+  emailVerified  DateTime?
+  image          String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  accounts       Account[]
+  sessions       Session[]
+  profilePicture Bytes?
 
   currentProgramId String?
 
   fatigue          Int                @default(0)
   ExerciseTemplate ExerciseTemplate[]
+  ProgramTemplate  ProgramTemplate[]
 }
 
 model Account {
@@ -105,24 +106,25 @@ model Workout {
 }
 
 model ExerciseTemplate {
-  id              String       @id @default(cuid())
-  name            String
-  description     String?                              // cues, video URL, etc.
-  isPublic        Boolean      @default(false)
+  id          String  @id @default(cuid())
+  name        String  @unique
+  description String? // cues, video URL, etc.
+  isPublic    Boolean @default(false)
 
   createdByUserId String?
-  createdByUser   User?        @relation(fields: [createdByUserId], references: [id])
+  createdByUser   User?   @relation(fields: [createdByUserId], references: [id])
 
-  muscleGroupId   String
-  muscleGroup     MuscleGroup  @relation(fields: [muscleGroupId], references: [id])
+  muscleGroupId String
+  muscleGroup   MuscleGroup @relation(fields: [muscleGroupId], references: [id])
 
   shortDescription String?
-  videoUrl String?
+  videoUrl         String?
 
-  createdAt       DateTime     @default(now())
+  createdAt DateTime @default(now())
 
-  instances       Exercise[]
-  
+  instances    Exercise[]
+  ExerciseSlot ExerciseSlot[]
+
   @@index([muscleGroupId])
 }
 
@@ -147,10 +149,10 @@ model Exercise {
 }
 
 model MuscleGroup {
-  id               String             @id @default(cuid())
-  name             String             @unique                 
-  recoveryFactor   Float                                     
-  exerciseTemplates ExerciseTemplate[]                       
+  id                String             @id @default(cuid())
+  name              String             @unique
+  recoveryFactor    Float
+  exerciseTemplates ExerciseTemplate[]
 }
 
 model Set {
@@ -175,4 +177,61 @@ model MuscleFeedback {
   createdAt DateTime @default(now())
 
   workout Workout @relation(fields: [workoutId], references: [id])
+}
+
+//Templates
+
+/// ─── TOP-LEVEL PROGRAM TEMPLATE ────────────────────────────────
+model ProgramTemplate {
+  id          String  @id @default(cuid())
+  name        String
+  goal        String?
+  length      Int
+  daysPerWeek Int
+  comments    String?
+  
+  // Added autoRegulated field
+  autoRegulated Boolean @default(false)
+
+  isPublic    Boolean @default(false)
+  createdById String?
+  createdBy   User?   @relation(fields: [createdById], references: [id])
+
+  weekTemplates WeekTemplate[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// ─── WEEK BLUEPRINT WITHIN A PROGRAM TEMPLATE ─────────────────
+model WeekTemplate {
+  id                String          @id @default(cuid())
+  weekNo            Int
+  programTemplateId String
+  programTemplate   ProgramTemplate @relation(fields: [programTemplateId], references: [id])
+
+  workoutTemplates WorkoutTemplate[]
+}
+
+/// ─── WORKOUT BLUEPRINT WITHIN A WEEK TEMPLATE ─────────────────
+model WorkoutTemplate {
+  id             String       @id @default(cuid())
+  dayNo          Int // 1 … daysPerWeek
+  name           String
+  weekTemplateId String
+  weekTemplate   WeekTemplate @relation(fields: [weekTemplateId], references: [id])
+
+  exerciseSlots ExerciseSlot[] // relational join to ExerciseTemplate
+}
+
+/// ─── MAPPING EXERCISE TEMPLATES INTO A WORKOUT TEMPLATE ───────
+model ExerciseSlot {
+  id               String           @id @default(cuid())
+  order            Int // display sequence
+  targetSets       Int
+  templateId       String
+  exerciseTemplate ExerciseTemplate @relation(fields: [templateId], references: [id])
+
+  workoutTemplateId String
+  workoutTemplate   WorkoutTemplate @relation(fields: [workoutTemplateId], references: [id])
 }
