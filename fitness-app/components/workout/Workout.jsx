@@ -1,8 +1,6 @@
 import Exercise from "./Exercise";
 import FeedbackForm from "./FeedbackForm"
 
-import Button from '@mui/material/Button'
-
 export default function Workout({ workout, setProgram, program, setCurrentWorkout, viewonly }) {
   
   return (

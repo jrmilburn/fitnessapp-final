@@ -4,7 +4,6 @@ import { useEffect, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { CheckCircle, ChevronLeft, ChevronRight, X, Activity } from "lucide-react"
 import { toast } from "react-hot-toast"
-import WorkoutCompleteModal from "./workout-complete-modal"
 
 export default function FeedbackForm({ program, setCurrentWorkout, workout, setProgram }) {
   // Find the current workout from the program data
@@ -263,13 +262,6 @@ export default function FeedbackForm({ program, setCurrentWorkout, workout, setP
 
   return (
     <>
-      {/* Workout Complete Confirmation Modal */}
-      <WorkoutCompleteModal
-        isOpen={workoutCompleteModalOpen}
-        onClose={() => setWorkoutCompleteModalOpen(false)}
-        onConfirm={handleWorkoutCompleteConfirm}
-        workout={workout}
-      />
 
       {/* Feedback Modal */}
       <AnimatePresence>

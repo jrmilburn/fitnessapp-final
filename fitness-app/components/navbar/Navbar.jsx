@@ -142,7 +142,7 @@ const Sidebar = ({ children }) => {
         {/* Sidebar header */}
         <div className="flex h-16 items-center justify-center border-b border-slate-200 px-4 dark:border-slate-700">
           <Link href="/" className="flex items-center">
-            <span className="text-xl font-bold text-blue-600 dark:text-blue-500">JFit</span>
+            <span className="text-xl font-bold text-blue-600 dark:text-blue-500">Fitness.jm</span>
           </Link>
         </div>
 
@@ -193,7 +193,6 @@ const Sidebar = ({ children }) => {
 
           {/* Page title */}
           <div className="text-lg font-medium text-slate-700 dark:text-slate-200">
-            {pathname === "/" ? "Dashboard" : pathname.split("/").pop()?.charAt(0).toUpperCase() + pathname.split("/").pop()?.slice(1)}
           </div>
 
           {/* User menu */}

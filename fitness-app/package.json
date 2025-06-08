@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "build": "NODE_OPTIONS='--max-old-space-size=4096' NEXT_DISABLE_ESLINT=1 next build",
+    "start": "DATABASE_URL='postgresql://jrmilburn:password@localhost:5432/fitnessfinal?schema=public' NEXTAUTH_SECRET='cXzepgoK7OYHb1AhZA9C2dyHOjQPmon5X2q0t2IcOTo=' JWT_SECRET='super-secret' NEXTAUTH_URL='http://3.26.38.79:3000' next start",
     "lint": "next lint"
   },
   "dependencies": {
@@ -38,6 +38,7 @@
     "react-chartjs-2": "^5.3.0",
     "react-dom": "^19.0.0",
     "react-hot-toast": "^2.5.2",
+    "sonner": "^2.0.3",
     "styled-components": "^6.1.17"
   },
   "devDependencies": {

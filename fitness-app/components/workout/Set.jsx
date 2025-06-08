@@ -1,10 +1,8 @@
-import Input from "../library/Input"
 import { useState, useEffect } from "react"
 import Checkbox from '@mui/material/Checkbox';
 import { TextField } from "@mui/material";
 import Image from "next/image";
 import ScrollUp from "../library/ScrollUp";
-import AppTheme from "../../theme/AppTheme";
 
 const label = { inputProps: { 'aria-label': 'Checkbox demo' } };
 

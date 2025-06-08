@@ -1,10 +1,9 @@
 import Set from "./Set";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 
 import ScrollUp from "../library/ScrollUp"
 import ExerciseSearch from "../new/ss/ExerciseSearch";
-import Info from "../../components/library/Info"
 
 export default function Exercise({ exercise, setProgram, program, workout, viewonly }) {
 

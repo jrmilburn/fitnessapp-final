@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { prisma } from "../../../lib/prisma"
 import { getServerSession } from "next-auth"
-import { authOptions } from "../auth/[...nextauth]/route"
+import { authOptions } from "../../../lib/auth"
 
 export async function POST(request) {
   try {
@@ -35,7 +35,11 @@ export async function POST(request) {
                 exerciseSlots: {
                   orderBy: { order: "asc" },
                   include: {
-                    exerciseTemplate: true,
+                    exerciseTemplate: {
+                      include: {
+                        muscleGroup: true
+                      }
+                    },
                   },
                 },
               },

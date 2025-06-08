@@ -1,64 +1,33 @@
-// app/components/ProtectedRoute.tsx
+'use client'
 
-'use client';
+import { useSession }         from "next-auth/react"
+import { useRouter, usePathname } from "next/navigation"
+import { useEffect }          from "react"
+import Navbar                 from "./navbar/Navbar"
 
-import { useSession } from "next-auth/react";
-import { useRouter, usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
-import Image from 'next/image';
-import Navbar from "./navbar/Navbar";
+const unprotected = ["/", "/auth/login", "/auth/register"]
 
 export default function ProtectedRoute({ children }) {
-  const { status } = useSession();
-  const router = useRouter();
-  const pathname = usePathname();
-  const [isClient, setIsClient] = useState(false);
-  const [shouldFadeOut, setShouldFadeOut] = useState(false);
+  const { status }   = useSession()           // "loading" | "authenticated" | "unauthenticated"
+  const pathname     = usePathname()
+  const router       = useRouter()
 
-  // Define paths that do not require authentication
-  const unprotectedPaths = ["/auth/login", "/auth/register", "/"];
-  const isUnprotectedPath = unprotectedPaths.includes(pathname);
-  const isLandingPage = pathname === "/";
+  const isOpenRoute  = unprotected.includes(pathname)
 
   useEffect(() => {
-    // Ensure the code runs only on the client side
-    setIsClient(true);
-  }, []);
-
-  useEffect(() => {
-    // Redirect unauthenticated users to /login if they're accessing protected routes
-
-    if(isLandingPage) {
-      return
+    if (status === "unauthenticated" && !isOpenRoute) {
+      router.replace("/auth/login")
+    } else if (status === "authenticated" && isOpenRoute && pathname !== "/") {
+      router.replace("/workout")
     }
+  }, [status, isOpenRoute, pathname, router])
 
-    if (status === "unauthenticated" && !isUnprotectedPath && isClient) {
-      router.push("/auth/login");
-    } else if (status === "authenticated" && isUnprotectedPath) {
-
-      router.push("/workout")
-
-    }
-  }, [status, router, isUnprotectedPath, isClient, isLandingPage]);
-
-  useEffect(() => {
-    // Minimum display time for the splash screen (1 second)
-    const timer = setTimeout(() => {
-      setShouldFadeOut(true); // Trigger fade-out
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [status]);
-
-  if(isUnprotectedPath || isLandingPage) {
-    return <>{children}</>
-
-  } else if (status === "authenticated") {
-    return (
-      <>
-        <Navbar>
-          {children}
-        </Navbar>
-      </>)
+  if (isOpenRoute)        return <>{children}</>
+  if (status === "loading") return null      // splash / spinner
+  if (status === "authenticated") {
+    return <Navbar>{children}</Navbar>
   }
+
+  // Fallback for unauthenticated while redirecting
+  return null
 }

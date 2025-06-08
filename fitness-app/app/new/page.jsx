@@ -110,118 +110,112 @@ export default function NewProgramPage() {
     setActiveTab("preview")
   }
 
-  // Save the current layout as a template
+  // ───────────────────────────────────────────────────────────
+  // 1. saveAsTemplate  → now returns templateId
+  // ───────────────────────────────────────────────────────────
   const saveAsTemplate = async () => {
     if (!weekLayout || weekLayout.length === 0) {
-      showToast("Please generate a workout layout first", "error")
-      return
+      showToast("Please generate a workout layout first", "error");
+      return null;
     }
-
-    // Check if any workout has exercises
-    const hasExercises = weekLayout.some((week) => week.workouts.some((workout) => workout.exercises.length > 0))
-
+    const hasExercises = weekLayout.some(w =>
+      w.workouts.some(wo => wo.exercises.length > 0),
+    );
     if (!hasExercises) {
-      showToast("Please add at least one exercise to your template", "error")
-      return
+      showToast("Please add at least one exercise to your template", "error");
+      return null;
     }
-
+  
     try {
-      setIsSubmitting(true)
-
-      // Convert weekLayout to template format
+      setIsSubmitting(true);
+    
       const templateData = {
-        name: programStructure.name,
-        goal: "", // Optional field
-        length: programStructure.length,
-        daysPerWeek: programStructure.days,
-        comments: programStructure.comments,
-        isPublic: false, // Default to private
-        // Include autoRegulated setting
-        autoRegulated: autoRegulated,
-        weeks: weekLayout.map((week) => ({
-          weekNo: week.weekNo,
-          workouts: week.workouts.map((workout) => ({
-            dayNo: workout.workoutNo,
-            name: workout.name,
-            exercises: workout.exercises.map((exercise) => ({
-              templateId: exercise.templateId,
-              targetSets: exercise.sets?.length || 0,
+        name:           programStructure.name,
+        goal:           "",
+        length:         programStructure.length,
+        daysPerWeek:    programStructure.days,
+        comments:       programStructure.comments,
+        isPublic:       false,
+        autoRegulated,
+        weeks: weekLayout.map(week => ({
+          weekNo:   week.weekNo,
+          workouts: week.workouts.map(wo => ({
+            dayNo:     wo.workoutNo,
+            name:      wo.name,
+            exercises: wo.exercises.map(ex => ({
+              templateId:  ex.templateId,
+              targetSets:  ex.sets?.length || 0,
             })),
           })),
         })),
-      }
-
-      const response = await fetch("/api/program-templates", {
-        method: "POST",
+      };
+    
+      const res = await fetch("/api/program-templates", {
+        method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ template: templateData }),
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        showToast("Your program template has been saved successfully")
-        setSelectedTemplate({
-          ...templateData,
-          id: data.templateId,
-        })
-      } else {
-        const error = await response.json()
-        throw new Error(error.message || "Failed to save template")
+        body:    JSON.stringify({ template: templateData }),
+      });
+    
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || "Failed to save template");
       }
-    } catch (error) {
-      showToast(error.message || "Something went wrong. Please try again.", "error")
+    
+      const { templateId } = await res.json();     // ← server returns it
+      showToast("Your program template has been saved successfully");
+      setSelectedTemplate({ ...templateData, id: templateId });
+      return templateId;                           // ← hand it back
+    } catch (e) {
+      showToast(e.message || "Something went wrong. Please try again.", "error");
+      return null;
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
-
-  // Create a program from the template
+  };
+  
+  // ───────────────────────────────────────────────────────────
+  // 2. createProgram  → waits for the ID returned above
+  // ───────────────────────────────────────────────────────────
   const createProgram = async () => {
     if (!selectedTemplate && !weekLayout) {
-      showToast("Please select a template or create a new one", "error")
-      return
+      showToast("Please select a template or create a new one", "error");
+      return;
     }
-
+  
     try {
-      setIsSubmitting(true)
-
-      // If we have a selected template, use its ID
-      // Otherwise, save the current layout as a template first
-      let templateId = selectedTemplate?.id
-
+      setIsSubmitting(true);
+    
+      let templateId = selectedTemplate?.id;
+    
+      // If no template yet, create one and wait for its ID
       if (!templateId && weekLayout) {
-        // Save current layout as template first
-        await saveAsTemplate()
-        // Get the newly created template ID
-        templateId = selectedTemplate?.id
+        templateId = await saveAsTemplate();
       }
-
+    
       if (!templateId) {
-        throw new Error("Failed to create or select a template")
+        throw new Error("Failed to create or select a template");
       }
-
-      const response = await fetch("/api/new-program", {
-        method: "POST",
+    
+      const res = await fetch("/api/new-program", {
+        method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          templateId,
-          autoRegulated,
-        }),
-      })
-
-      if (response.ok) {
-        showToast("Your workout program has been created successfully")
-        router.push("/workout")
-      } else {
-        const error = await response.json()
-        throw new Error(error.message || "Failed to create program")
+        body:    JSON.stringify({ templateId, autoRegulated }),
+      });
+    
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || "Failed to create program");
       }
-    } catch (error) {
-      showToast(error.message || "Something went wrong. Please try again.", "error")
+    
+      showToast("Your workout program has been created successfully");
+      router.push("/workout");
+    } catch (e) {
+      showToast(e.message || "Something went wrong. Please try again.", "error");
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
+
 
   return (
     <div className="container mx-auto px-4 py-6">

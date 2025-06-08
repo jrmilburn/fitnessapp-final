@@ -111,7 +111,7 @@ export default function TemplateLibrary({ onSelectTemplate }) {
           <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
             <h3 className="font-medium">Templates</h3>
           </div>
-          <div className="divide-y divide-gray-200 max-h-96 overflow-y-auto">
+          <div className="divide-y divide-gray-200 max-h-64 overflow-y-auto">
             {isLoading ? (
               <div className="p-4 text-center text-gray-500">Loading templates...</div>
             ) : filteredTemplates.length > 0 ? (

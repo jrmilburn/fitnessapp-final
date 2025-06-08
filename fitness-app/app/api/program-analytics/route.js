@@ -1,6 +1,6 @@
 import { prisma } from "../../../lib/prisma"
 import { getServerSession } from "next-auth"
-import { authOptions } from "../auth/[...nextauth]/route"
+import { authOptions } from "../../../lib/auth"
 
 // Update the GET function to properly handle the response
 export async function GET(request) {
