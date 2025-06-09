@@ -1,0 +1,5 @@
+ssh -i "~/.ssh/JOE_QUT_MACPRO.pem" ubuntu@ec2-3-26-38-79.ap-southeast-2.compute.amazonaws.com
+
+rsync -avz --exclude 'node_modules' --exclude '.git' --exclude '.env' \
+-e "ssh -i ~/.ssh/JOE_QUT_MACPRO.pem" \
+. ubuntu@ec2-3-26-38-79.ap-southeast-2.compute.amazonaws.com:~/app
