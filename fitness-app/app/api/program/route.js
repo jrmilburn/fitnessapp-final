@@ -13,8 +13,6 @@ export async function GET() {
         }
     })
 
-    console.log(user);
-
     const program = await prisma.program.findUnique({
         where: {
           id: user.currentProgramId,
@@ -42,7 +40,6 @@ export async function GET() {
                       },
                     },
                   },
-                  MuscleFeedback: true
                 },
               },
             },
@@ -50,9 +47,6 @@ export async function GET() {
         },
       });
       
-
-    console.log(program);
-
     return NextResponse.json(program);
 
 }

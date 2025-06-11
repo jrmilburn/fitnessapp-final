@@ -67,8 +67,6 @@ model Program {
   length   Int
   days     Int
 
-  autoRegulated Boolean @default(false)
-
   userId String?
 
   createdAt DateTime @default(now())
@@ -92,8 +90,7 @@ model Workout {
   weekId    String
   week      Week   @relation(fields: [weekId], references: [id])
 
-  exercises      Exercise[]
-  MuscleFeedback MuscleFeedback[]
+  exercises Exercise[]
 
   nextWorkoutId     String?
   previousWorkoutId String?
@@ -101,7 +98,7 @@ model Workout {
   programmed Boolean @default(false)
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
   feedbackId String?
 }
@@ -168,18 +165,6 @@ model Set {
   createdAt DateTime @default(now())
 }
 
-model MuscleFeedback {
-  id        String   @id @default(cuid())
-  workoutId String
-  muscle    String
-  workload  Int
-  jointpain Int
-  soreness  Int
-  createdAt DateTime @default(now())
-
-  workout Workout @relation(fields: [workoutId], references: [id])
-}
-
 //Templates
 
 /// ─── TOP-LEVEL PROGRAM TEMPLATE ────────────────────────────────
@@ -190,7 +175,7 @@ model ProgramTemplate {
   length      Int
   daysPerWeek Int
   comments    String?
-  
+
   // Added autoRegulated field
   autoRegulated Boolean @default(false)
 
@@ -235,16 +220,25 @@ model ExerciseSlot {
 
   workoutTemplateId String
   workoutTemplate   WorkoutTemplate @relation(fields: [workoutTemplateId], references: [id])
+
+  setTemplates SetTemplate[]
+}
+
+model SetTemplate {
+  id     String @id @default(cuid())
+  reps   Int?
+  weight Int?
+
+  exerciseSlotId String
+  exerciseSlot   ExerciseSlot @relation(fields: [exerciseSlotId], references: [id])
 }
 
 model Activity {
-
-  id String @id @default(cuid())
-  title String
-  type String
+  id     String @id @default(cuid())
+  title  String
+  type   String
   userId String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
 }

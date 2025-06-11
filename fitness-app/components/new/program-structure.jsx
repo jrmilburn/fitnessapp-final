@@ -2,7 +2,7 @@
 import { useState } from "react"
 import { HelpCircle } from "lucide-react"
 
-export default function ProgramStructure({ programStructure, setProgramStructure, autoRegulated, setAutoRegulated }) {
+export default function ProgramStructure({ programStructure, setProgramStructure }) {
   const handleChange = (field, value) => {
     setProgramStructure((prev) => ({
       ...prev,
@@ -80,52 +80,6 @@ export default function ProgramStructure({ programStructure, setProgramStructure
             <option value={7}>7 weeks</option>
             <option value={8}>8 weeks</option>
           </select>
-        </div>
-      </div>
-
-      <div className="mt-6 border border-gray-200 rounded-lg p-4">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center">
-            <h3 className="text-lg font-medium">Auto-Regulation</h3>
-            <div className="relative ml-2">
-              <button
-                type="button"
-                className="text-gray-400 hover:text-gray-500"
-                onMouseEnter={() => setShowTooltip(true)}
-                onMouseLeave={() => setShowTooltip(false)}
-              >
-                <HelpCircle className="h-4 w-4" />
-              </button>
-              {showTooltip && (
-                <div className="absolute z-10 w-72 p-2 bg-gray-800 text-white text-xs rounded shadow-lg -left-36 top-6">
-                  When enabled, auto-regulation adjusts the set volume across the weeks of your program based on your
-                  feedback. This means that the system monitors your workout performance and recovery to dynamically
-                  tailor the training load for optimal progression.
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-        <p className="text-sm text-gray-500 mb-4">Automatically adjust training volume based on performance</p>
-        <div className="flex items-center space-x-2">
-          <div className="relative inline-block w-10 mr-2 align-middle select-none">
-            <input
-              type="checkbox"
-              id="auto-regulation"
-              checked={autoRegulated}
-              onChange={() => setAutoRegulated(!autoRegulated)}
-              className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"
-            />
-            <label
-              htmlFor="auto-regulation"
-              className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${
-                autoRegulated ? "bg-blue-600" : "bg-gray-300"
-              }`}
-            ></label>
-          </div>
-          <label htmlFor="auto-regulation" className="text-sm font-medium">
-            {autoRegulated ? "Enabled" : "Disabled"}
-          </label>
         </div>
       </div>
     </div>

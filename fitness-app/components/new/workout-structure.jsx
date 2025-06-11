@@ -21,7 +21,7 @@ export default function WorkoutStructure({ workout, weekIndex, workoutIndex, set
     name: "",
     muscle: "",
     templateId: "",
-    sets: [{ setNo: 1, reps: 10, weight: 0 }],
+    sets: [{ setNo: 1, reps: 0, weight: 0 }],
   })
 
   const [editingExercise, setEditingExercise] = useState(null)
@@ -95,7 +95,7 @@ export default function WorkoutStructure({ workout, weekIndex, workoutIndex, set
       name: template.name,
       muscle: template.muscleGroup.name,
       templateId: template.id,
-      sets: [{ setNo: 1, reps: 10, weight: 0 }],
+      sets: [{ setNo: 1, reps: 0, weight: 0 }],
     })
   }
 
@@ -107,7 +107,7 @@ export default function WorkoutStructure({ workout, weekIndex, workoutIndex, set
         ...newExercise.sets,
         {
           setNo: newExercise.sets.length + 1,
-          reps: 10,
+          reps: 0,
           weight: newExercise.sets[newExercise.sets.length - 1]?.weight || 0,
         },
       ],
@@ -145,7 +145,7 @@ export default function WorkoutStructure({ workout, weekIndex, workoutIndex, set
       name: "",
       muscle: "",
       templateId: "",
-      sets: [{ setNo: 1, reps: 10, weight: 0 }],
+      sets: [{ setNo: 1, reps: 0, weight: 0 }],
     })
     setShowAddExercise(false)
     setSelectedMuscleGroup("")

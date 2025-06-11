@@ -5,7 +5,7 @@ import { Copy } from "lucide-react"
 import WorkoutStructure from "./workout-structure"
 import { DragDropContext } from "@hello-pangea/dnd"
 
-export default function WeekLayout({ weekLayout, setWeekLayout, autoRegulated }) {
+export default function WeekLayout({ weekLayout, setWeekLayout }) {
   const [activeWeek, setActiveWeek] = useState("1")
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
 
@@ -43,8 +43,7 @@ export default function WeekLayout({ weekLayout, setWeekLayout, autoRegulated })
     setShowConfirmDialog(false)
   }
 
-  // If auto-regulated, only show the first week
-  const displayedWeeks = autoRegulated ? weekLayout.slice(0, 1) : weekLayout
+  const displayedWeeks = weekLayout;
 
   // Handle drag end for exercises between workouts
   const handleDragEnd = (result) => {
@@ -104,16 +103,7 @@ export default function WeekLayout({ weekLayout, setWeekLayout, autoRegulated })
 
   return (
     <div className="space-y-6">
-      {autoRegulated && (
-        <div className="bg-gray-100 p-4 rounded-md">
-          <p className="text-sm">
-            <strong>Auto-regulation enabled:</strong> Design your first week's workouts. The system will automatically
-            adjust volume for subsequent weeks based on performance.
-          </p>
-        </div>
-      )}
 
-      {!autoRegulated && (
         <div className="flex flex-wrap items-center justify-between mb-4">
           <div className="flex flex-wrap gap-2 mb-2 sm:mb-0">
             {weekLayout.map((week) => (
@@ -141,7 +131,7 @@ export default function WeekLayout({ weekLayout, setWeekLayout, autoRegulated })
 
           {/* Confirmation Dialog */}
           {showConfirmDialog && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
               <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
                 <h3 className="text-lg font-medium mb-2">Copy Week Structure</h3>
                 <p className="text-gray-600 mb-4">
@@ -166,9 +156,7 @@ export default function WeekLayout({ weekLayout, setWeekLayout, autoRegulated })
             </div>
           )}
         </div>
-      )}
 
-      {!autoRegulated && (
         <DragDropContext onDragEnd={handleDragEnd}>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {weekLayout[Number.parseInt(activeWeek) - 1]?.workouts.map((workout, workoutIndex) => (
@@ -182,23 +170,6 @@ export default function WeekLayout({ weekLayout, setWeekLayout, autoRegulated })
             ))}
           </div>
         </DragDropContext>
-      )}
-
-      {autoRegulated && (
-        <DragDropContext onDragEnd={handleDragEnd}>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {displayedWeeks[0].workouts.map((workout, workoutIndex) => (
-              <WorkoutStructure
-                key={`week-1-workout-${workout.workoutNo}`}
-                workout={workout}
-                weekIndex={0}
-                workoutIndex={workoutIndex}
-                setWeekLayout={setWeekLayout}
-              />
-            ))}
-          </div>
-        </DragDropContext>
-      )}
     </div>
   )
 }

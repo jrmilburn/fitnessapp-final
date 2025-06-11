@@ -40,6 +40,7 @@ export async function POST(request) {
                         muscleGroup: true
                       }
                     },
+                    setTemplates: true
                   },
                 },
               },
@@ -65,13 +66,11 @@ export async function POST(request) {
         comments: template.comments,
         length: template.length,
         days: template.daysPerWeek,
-        autoRegulated: template.autoRegulated,
         userId: user.id,
       },
     })
 
-    // For auto-regulated programs, we only need to create the first week
-    const weeksToCreate = template.autoRegulated ? template.weekTemplates.slice(0, 1) : template.weekTemplates
+    const weeksToCreate = template.weekTemplates;
 
     // Create weeks and workouts
     for (const weekTemplate of weeksToCreate) {
@@ -105,30 +104,17 @@ export async function POST(request) {
           })
 
           // Create sets
-          for (let i = 0; i < slot.targetSets; i++) {
+          for (const [idx, setTemp] of slot.setTemplates.entries()) {
             await prisma.set.create({
               data: {
-                setNo: i + 1,
-                reps: 0, // Default values
-                weight: 0, // Default values
+                setNo:    idx + 1,          // ← idx starts at 0
+                reps:     setTemp.reps,
+                weight:   setTemp.weight,
                 exerciseId: exercise.id,
               },
-            })
+            });
           }
         }
-      }
-    }
-
-    // If this is auto-regulated, we need to create placeholder weeks for the rest of the program
-    if (template.autoRegulated && template.length > 1) {
-      // Create remaining weeks with empty workouts
-      for (let weekNo = 2; weekNo <= template.length; weekNo++) {
-        await prisma.week.create({
-          data: {
-            weekNo,
-            programId: program.id,
-          },
-        })
       }
     }
 

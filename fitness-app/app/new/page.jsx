@@ -23,7 +23,6 @@ export default function NewProgramPage() {
   })
 
   const [weekLayout, setWeekLayout] = useState(null)
-  const [autoRegulated, setAutoRegulated] = useState(false)
 
   // Show toast notification
   const showToast = (message, type = "success") => {
@@ -78,9 +77,6 @@ export default function NewProgramPage() {
       days: template.daysPerWeek,
     })
 
-    // Set autoRegulated from template
-    setAutoRegulated(template.autoRegulated || false)
-
     // Convert template weeks to weekLayout format
     const convertedWeeks = template.weeks.map((week) => ({
       weekNo: week.weekNo,
@@ -110,68 +106,85 @@ export default function NewProgramPage() {
     setActiveTab("preview")
   }
 
-  // ───────────────────────────────────────────────────────────
-  // 1. saveAsTemplate  → now returns templateId
-  // ───────────────────────────────────────────────────────────
-  const saveAsTemplate = async () => {
-    if (!weekLayout || weekLayout.length === 0) {
-      showToast("Please generate a workout layout first", "error");
-      return null;
-    }
-    const hasExercises = weekLayout.some(w =>
-      w.workouts.some(wo => wo.exercises.length > 0),
-    );
-    if (!hasExercises) {
-      showToast("Please add at least one exercise to your template", "error");
-      return null;
-    }
-  
-    try {
-      setIsSubmitting(true);
-    
-      const templateData = {
-        name:           programStructure.name,
-        goal:           "",
-        length:         programStructure.length,
-        daysPerWeek:    programStructure.days,
-        comments:       programStructure.comments,
-        isPublic:       false,
-        autoRegulated,
-        weeks: weekLayout.map(week => ({
-          weekNo:   week.weekNo,
-          workouts: week.workouts.map(wo => ({
-            dayNo:     wo.workoutNo,
-            name:      wo.name,
-            exercises: wo.exercises.map(ex => ({
+// ───────────────────────────────────────────────────────────
+// 1. saveAsTemplate  → now guarantees `sets` is always present
+// ───────────────────────────────────────────────────────────
+const saveAsTemplate = async () => {
+  if (!weekLayout || weekLayout.length === 0) {
+    showToast("Please generate a workout layout first", "error");
+    return null;
+  }
+
+  // Make sure there is at least one exercise
+  const hasExercises = weekLayout.some(w =>
+    w.workouts.some(wo => wo.exercises.length > 0),
+  );
+  if (!hasExercises) {
+    showToast("Please add at least one exercise to your template", "error");
+    return null;
+  }
+
+  try {
+    setIsSubmitting(true);
+
+    const templateData = {
+      name:        programStructure.name,
+      goal:        "",
+      length:      programStructure.length,
+      daysPerWeek: programStructure.days,
+      comments:    programStructure.comments,
+      isPublic:    false,
+      weeks: weekLayout.map(week => ({
+        weekNo:   week.weekNo,
+        workouts: week.workouts.map(wo => ({
+          dayNo: wo.workoutNo,
+          name:  wo.name,
+          exercises: wo.exercises.map(ex => {
+            const safeSets = Array.isArray(ex.sets) && ex.sets.length
+              ? ex.sets
+              : Array.from(
+                  { length: ex.targetSets ?? 0 },
+                  () => ({ reps: 0, weight: 0 }),
+                );
+
+            return {
               templateId:  ex.templateId,
-              targetSets:  ex.sets?.length || 0,
-            })),
-          })),
+              targetSets:  safeSets.length,
+              sets: safeSets.map(set => ({
+                reps:   set?.reps   ?? 0,
+                weight: set?.weight ?? 0,
+              })),
+            };
+          }),
         })),
-      };
-    
-      const res = await fetch("/api/program-templates", {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ template: templateData }),
-      });
-    
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message || "Failed to save template");
-      }
-    
-      const { templateId } = await res.json();     // ← server returns it
-      showToast("Your program template has been saved successfully");
-      setSelectedTemplate({ ...templateData, id: templateId });
-      return templateId;                           // ← hand it back
-    } catch (e) {
-      showToast(e.message || "Something went wrong. Please try again.", "error");
-      return null;
-    } finally {
-      setIsSubmitting(false);
+      })),
+    };
+
+    console.log('TEMPLATE DATA', templateData);
+
+    const res = await fetch("/api/program-templates", {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({ template: templateData }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.message || "Failed to save template");
     }
-  };
+
+    const { templateId } = await res.json();
+    showToast("Your program template has been saved successfully");
+    setSelectedTemplate({ ...templateData, id: templateId });
+    return templateId;
+  } catch (e) {
+    showToast(e.message || "Something went wrong. Please try again.", "error");
+    return null;
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
   
   // ───────────────────────────────────────────────────────────
   // 2. createProgram  → waits for the ID returned above
@@ -199,7 +212,7 @@ export default function NewProgramPage() {
       const res = await fetch("/api/new-program", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ templateId, autoRegulated }),
+        body:    JSON.stringify({ templateId }),
       });
     
       if (!res.ok) {
@@ -297,8 +310,6 @@ export default function NewProgramPage() {
             <ProgramStructure
               programStructure={programStructure}
               setProgramStructure={setProgramStructure}
-              autoRegulated={autoRegulated}
-              setAutoRegulated={setAutoRegulated}
             />
 
             <div className="flex justify-end mt-6">
@@ -314,7 +325,7 @@ export default function NewProgramPage() {
 
         {activeTab === "workouts" && weekLayout && (
           <div className="p-6">
-            <WeekLayout weekLayout={weekLayout} setWeekLayout={setWeekLayout} autoRegulated={autoRegulated} />
+            <WeekLayout weekLayout={weekLayout} setWeekLayout={setWeekLayout} />
 
             <div className="flex justify-between mt-6">
               <button
@@ -335,7 +346,7 @@ export default function NewProgramPage() {
 
         {activeTab === "preview" && weekLayout && (
           <div className="p-6">
-            <ProgramPreview programStructure={programStructure} weekLayout={weekLayout} autoRegulated={autoRegulated} />
+            <ProgramPreview programStructure={programStructure} weekLayout={weekLayout} />
 
             <div className="flex justify-between mt-6">
               <button

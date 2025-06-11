@@ -81,6 +81,8 @@ export async function POST(request) {
 
     const { template } = await request.json()
 
+    console.log('TEMPLATE', template.weeks[0].workouts[0].exercises);
+
     // Create the program template
     const newTemplate = await prisma.programTemplate.create({
       data: {
@@ -91,7 +93,6 @@ export async function POST(request) {
         comments: template.comments,
         isPublic: template.isPublic || false,
         // Store the autoRegulated setting
-        autoRegulated: template.autoRegulated || false,
         createdById: user.id,
         weekTemplates: {
           create: template.weeks.map((week) => ({
@@ -105,6 +106,12 @@ export async function POST(request) {
                     order: index + 1,
                     targetSets: exercise.targetSets,
                     templateId: exercise.templateId,
+                    setTemplates: {
+                      create: exercise.sets.map((set, index) => ({
+                        reps: set.reps,
+                        weight: set.weight,
+                      }))
+                    }
                   })),
                 },
               })),

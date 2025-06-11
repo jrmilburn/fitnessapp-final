@@ -1,8 +1,8 @@
 "use client"
 
-export default function ProgramPreview({ programStructure, weekLayout, autoRegulated }) {
-  // For auto-regulated programs, we only show the first week
-  const weeksToDisplay = autoRegulated ? [weekLayout[0]] : weekLayout
+export default function ProgramPreview({ programStructure, weekLayout }) {
+
+  const weeksToDisplay = weekLayout
 
   return (
     <div className="space-y-6">
@@ -14,11 +14,6 @@ export default function ProgramPreview({ programStructure, weekLayout, autoRegul
               {programStructure.length} weeks, {programStructure.days} days per week
             </p>
           </div>
-          {autoRegulated && (
-            <span className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full border border-gray-300">
-              Auto-Regulated
-            </span>
-          )}
         </div>
 
         {programStructure.comments && (
@@ -28,14 +23,6 @@ export default function ProgramPreview({ programStructure, weekLayout, autoRegul
           </div>
         )}
 
-        {autoRegulated && (
-          <div className="bg-gray-100 p-4 rounded-md mb-4">
-            <p className="text-sm">
-              <strong>Auto-regulation enabled:</strong> This program will automatically adjust training volume in
-              subsequent weeks based on your performance feedback.
-            </p>
-          </div>
-        )}
       </div>
 
       <div className="space-y-4">
@@ -76,26 +63,6 @@ export default function ProgramPreview({ programStructure, weekLayout, autoRegul
             </div>
           </details>
         ))}
-
-        {autoRegulated && programStructure.length > 1 && (
-          <details className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-            <summary className="px-6 py-4 cursor-pointer font-medium flex items-center justify-between hover:bg-gray-50">
-              Weeks 2-{programStructure.length} (Auto-Regulated)
-              <svg className="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </summary>
-            <div className="px-6 py-4 border-t border-gray-200">
-              <div className="bg-gray-100 p-4 rounded-md">
-                <p className="text-sm">
-                  Subsequent weeks will follow the same exercise selection as Week 1, with volume adjustments based on
-                  your performance feedback. The system will automatically optimize your training load for maximum
-                  progress.
-                </p>
-              </div>
-            </div>
-          </details>
-        )}
       </div>
     </div>
   )

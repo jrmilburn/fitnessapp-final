@@ -128,11 +128,6 @@ export default function TemplateLibrary({ onSelectTemplate }) {
                     {template.length} weeks, {template.daysPerWeek} days/week
                   </div>
                   <div className="flex items-center mt-1">
-                    {template.autoRegulated && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 mr-2">
-                        Auto-Regulated
-                      </span>
-                    )}
                     {template.isPublic && (
                       <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
                         Public
@@ -162,11 +157,6 @@ export default function TemplateLibrary({ onSelectTemplate }) {
                     <span className="text-sm text-gray-500 mr-2">
                       {templateDetails.length} weeks, {templateDetails.daysPerWeek} days/week
                     </span>
-                    {templateDetails.autoRegulated && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                        Auto-Regulated
-                      </span>
-                    )}
                   </div>
                   {templateDetails.comments && <p className="text-sm text-gray-600 mt-2">{templateDetails.comments}</p>}
                 </div>
