@@ -3,10 +3,9 @@
 import { useState } from "react"
 import { DragDropContext, Droppable } from "@hello-pangea/dnd"
 import Exercise from "./exercise"
-import FeedbackForm from "./feedback-form"
-import FeedbackSummary from "./feedback-summary"
 import { CheckCircle, AlertCircle, Lock } from "lucide-react"
 import { toast } from "react-hot-toast"
+import NextWorkout from "./next-workout"
 
 export default function Workout({ workout, setProgram, program, setCurrentWorkout, viewonly }) {
   const [expandedMuscleGroup, setExpandedMuscleGroup] = useState(null)
@@ -220,18 +219,13 @@ export default function Workout({ workout, setProgram, program, setCurrentWorkou
         ))}
       </DragDropContext>
 
-      {/* Show feedback form for active workouts or feedback summary for completed ones */}
-      {workout?.programmed && !viewonly && (
-        <FeedbackForm
+      {isWorkoutComplete && (
+        <NextWorkout 
           program={program}
           setCurrentWorkout={setCurrentWorkout}
           workout={workout}
-          setProgram={setProgram}
         />
       )}
-
-      {/* Show feedback summary for completed workouts */}
-      {viewonly && <FeedbackSummary workout={workout} />}
     </div>
   )
 }
