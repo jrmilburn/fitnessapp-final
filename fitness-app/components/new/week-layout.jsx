@@ -1,16 +1,17 @@
 "use client"
 
 import { useState } from "react"
-import { Copy } from "lucide-react"
+import { Copy, CheckSquare, Square } from "lucide-react"
 import WorkoutStructure from "./workout-structure"
 import { DragDropContext } from "@hello-pangea/dnd"
 
 export default function WeekLayout({ weekLayout, setWeekLayout }) {
   const [activeWeek, setActiveWeek] = useState("1")
-  const [showConfirmDialog, setShowConfirmDialog] = useState(false)
+  const [showCopyModal, setShowCopyModal] = useState(false)
+  const [selectedWeeks, setSelectedWeeks] = useState([])
 
-  // Copy the current week's structure to all other weeks
-  const copyToAllWeeks = () => {
+  // Copy the current week's structure to selected weeks only
+  const copyToSelectedWeeks = () => {
     const weekIndex = Number.parseInt(activeWeek) - 1
 
     setWeekLayout((prevLayout) => {
@@ -20,30 +21,35 @@ export default function WeekLayout({ weekLayout, setWeekLayout }) {
         return prevLayout
       }
 
-      // Create a new layout by copying currentWeek.workouts to every other week
+      // Create a new layout by copying currentWeek.workouts to selected weeks only
       const newLayout = prevLayout.map((week, index) => {
-        if (index === weekIndex) {
-          return week
-        } else {
-          const copiedWorkouts = currentWeek.workouts.map((workout) => ({
-            ...workout,
-            // Create a new array for exercises so future changes don't conflict
-            exercises: JSON.parse(JSON.stringify(workout.exercises)),
-          }))
+        // If this week is in selectedWeeks, copy the workouts
+        if (selectedWeeks.includes(week.weekNo)) {
+          const copiedWorkouts = JSON.parse(JSON.stringify(currentWeek.workouts))
           return {
             ...week,
             workouts: copiedWorkouts,
           }
+        } else {
+          // Leave other weeks unchanged
+          return week
         }
       })
 
       return newLayout
     })
 
-    setShowConfirmDialog(false)
+    // Close modal and clear selections
+    setShowCopyModal(false)
+    setSelectedWeeks([])
   }
 
-  const displayedWeeks = weekLayout;
+  // Toggle week selection
+  const toggleWeekSelection = (weekNo) => {
+    setSelectedWeeks((prev) => (prev.includes(weekNo) ? prev.filter((w) => w !== weekNo) : [...prev, weekNo]))
+  }
+
+  const displayedWeeks = weekLayout
 
   // Handle drag end for exercises between workouts
   const handleDragEnd = (result) => {
@@ -101,75 +107,97 @@ export default function WeekLayout({ weekLayout, setWeekLayout }) {
     })
   }
 
+  // Get other weeks (excluding active week)
+  const otherWeeks = weekLayout.filter((week) => week.weekNo.toString() !== activeWeek)
+
   return (
     <div className="space-y-6">
-
-        <div className="flex flex-wrap items-center justify-between mb-4">
-          <div className="flex flex-wrap gap-2 mb-2 sm:mb-0">
-            {weekLayout.map((week) => (
-              <button
-                key={week.weekNo}
-                className={`px-4 py-2 rounded-md ${
-                  activeWeek === week.weekNo.toString()
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 hover:bg-gray-200 text-gray-700"
-                }`}
-                onClick={() => setActiveWeek(week.weekNo.toString())}
-              >
-                Week {week.weekNo}
-              </button>
-            ))}
-          </div>
-
-          <button
-            className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
-            onClick={() => setShowConfirmDialog(true)}
-          >
-            <Copy className="h-4 w-4" />
-            <span className="hidden sm:inline">Copy to All Weeks</span>
-          </button>
-
-          {/* Confirmation Dialog */}
-          {showConfirmDialog && (
-            <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-                <h3 className="text-lg font-medium mb-2">Copy Week Structure</h3>
-                <p className="text-gray-600 mb-4">
-                  Are you sure you want to copy Week {activeWeek}'s structure to all other weeks? This will overwrite
-                  any existing workouts in other weeks.
-                </p>
-                <div className="flex justify-end gap-2">
-                  <button
-                    className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
-                    onClick={() => setShowConfirmDialog(false)}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
-                    onClick={copyToAllWeeks}
-                  >
-                    Copy
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+      <div className="flex flex-wrap items-center justify-between mb-4">
+        <div className="flex flex-wrap gap-2 mb-2 sm:mb-0">
+          {weekLayout.map((week) => (
+            <button
+              key={week.weekNo}
+              className={`px-4 py-2 rounded-md ${
+                activeWeek === week.weekNo.toString()
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+              }`}
+              onClick={() => setActiveWeek(week.weekNo.toString())}
+            >
+              Week {week.weekNo}
+            </button>
+          ))}
         </div>
 
-        <DragDropContext onDragEnd={handleDragEnd}>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {weekLayout[Number.parseInt(activeWeek) - 1]?.workouts.map((workout, workoutIndex) => (
-              <WorkoutStructure
-                key={`week-${activeWeek}-workout-${workout.workoutNo}`}
-                workout={workout}
-                weekIndex={Number.parseInt(activeWeek) - 1}
-                workoutIndex={workoutIndex}
-                setWeekLayout={setWeekLayout}
-              />
-            ))}
+        <button
+          className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+          onClick={() => setShowCopyModal(true)}
+        >
+          <Copy className="h-4 w-4" />
+          <span className="hidden sm:inline">Copy week →</span>
+        </button>
+
+        {/* Copy Modal */}
+        {showCopyModal && (
+          <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+              <h3 className="text-lg font-medium mb-4">Copy Week {activeWeek} to:</h3>
+
+              <div className="space-y-2 mb-6 max-h-60 overflow-y-auto">
+                {otherWeeks.map((week) => (
+                  <div
+                    key={week.weekNo}
+                    className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer"
+                    onClick={() => toggleWeekSelection(week.weekNo)}
+                  >
+                    {selectedWeeks.includes(week.weekNo) ? (
+                      <CheckSquare className="h-5 w-5 text-blue-600" />
+                    ) : (
+                      <Square className="h-5 w-5 text-gray-400" />
+                    )}
+                    <span className="text-gray-700">Week {week.weekNo}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <button
+                  className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                  onClick={() => {
+                    setShowCopyModal(false)
+                    setSelectedWeeks([])
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  className={`px-4 py-2 rounded-md text-white ${
+                    selectedWeeks.length > 0 ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-300 cursor-not-allowed"
+                  }`}
+                  onClick={copyToSelectedWeeks}
+                  disabled={selectedWeeks.length === 0}
+                >
+                  Copy
+                </button>
+              </div>
+            </div>
           </div>
-        </DragDropContext>
+        )}
+      </div>
+
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {weekLayout[Number.parseInt(activeWeek) - 1]?.workouts.map((workout, workoutIndex) => (
+            <WorkoutStructure
+              key={`week-${activeWeek}-workout-${workout.workoutNo}`}
+              workout={workout}
+              weekIndex={Number.parseInt(activeWeek) - 1}
+              workoutIndex={workoutIndex}
+              setWeekLayout={setWeekLayout}
+            />
+          ))}
+        </div>
+      </DragDropContext>
     </div>
   )
 }

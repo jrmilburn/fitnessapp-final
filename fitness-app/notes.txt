@@ -1,4 +1,5 @@
 Next to implement
 
-1. Workout completion button and functionality.
-2. Build full program and enter all data while taking notes of functionality.
+1. Workout completion button and functionality. X
+2. Build full program and enter all data while taking notes of functionality. X
+3. 
