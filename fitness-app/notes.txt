@@ -1,5 +1,9 @@
 Next to implement
 
 1. Workout completion button and functionality. X
-2. Build full program and enter all data while taking notes of functionality. X
-3. 
+2. Build full program and enter all data while taking notes of functionality. User testing.
+3. Add selective week copying. X
+4. Fix signout to redirect to landing page X
+5. Professionalise landing page
+6. Formalise exercise choices
+
