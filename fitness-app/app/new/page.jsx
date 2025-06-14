@@ -231,8 +231,8 @@ const saveAsTemplate = async () => {
 
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <h1 className="text-3xl font-bold mb-6">Create New Workout Program</h1>
+    <div className="container mx-auto md:px-4 py-6">
+      <h1 className="text-3xl font-bold mb-6 px-4">New Program</h1>
 
       {/* Toast notification */}
       {toast && (
@@ -289,7 +289,6 @@ const saveAsTemplate = async () => {
         </div>
       </div>
 
-      {/* Content */}
       <div className="bg-white rounded-lg shadow-md border border-gray-200">
         {activeTab === "library" && (
           <div className="p-6">
@@ -355,10 +354,10 @@ const saveAsTemplate = async () => {
               >
                 Back to Workouts
               </button>
-              <div className="space-x-2">
+              <div className="flex flex-col gap-2 space-x-2">
                 {!selectedTemplate?.id && (
                   <button
-                    className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                    className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors w-full"
                     onClick={saveAsTemplate}
                     disabled={isSubmitting}
                   >

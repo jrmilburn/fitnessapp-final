@@ -81,7 +81,7 @@ export default function WorkoutPage() {
 
   if (loading) {
     return (
-      <div className="w-full min-h-screen flex flex-col justify-center items-center p-4">
+      <div className="w-full min-h-screen flex flex-col justify-center items-center md:p-4">
         <div className="animate-pulse flex flex-col items-center">
           <Dumbbell className="h-16 w-16 text-blue-600 mb-4" />
           <p className="text-lg text-gray-600">Loading your workout...</p>
@@ -109,7 +109,7 @@ export default function WorkoutPage() {
           />
         )}
 
-        <div className="flex-1 p-4">
+        <div className="flex-1 md:p-4">
           <Workout
             workout={currentWorkout}
             setProgram={setProgram}

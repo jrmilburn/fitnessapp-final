@@ -261,7 +261,7 @@ const Sidebar = ({ children }) => {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto max-h-[calc(100vh-64px)] px-4 py-4">{children}</main>
+        <main className="flex-1 overflow-y-auto max-h-[calc(100vh-64px)] py-2">{children}</main>
       </div>
     </div>
   )

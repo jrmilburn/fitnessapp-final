@@ -114,13 +114,13 @@ export default function Set({ set, setProgram, exerciseId, viewonly, index }) {
 
   return (
     <div
-      className={`grid grid-cols-12 gap-2 items-center py-2 ${index % 2 === 0 ? "bg-gray-50" : "bg-white"} rounded-md`}
+      className={`grid grid-cols-12 gap-2 items-center py-2 ${index % 2 === 0 ? "bg-gray-50" : "bg-white"} rounded-md w-full`}
     >
       {!viewonly && (
         <div className="col-span-1 relative">
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="p-1 rounded-full hover:bg-gray-200 transition-colors"
+            className="p-1 rounded-full hover:bg-gray-200 transition-colors ml-2"
           >
             <MoreVertical className="h-4 w-4 text-gray-500" />
           </button>

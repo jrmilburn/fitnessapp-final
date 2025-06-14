@@ -138,14 +138,14 @@ export default function Exercise({ exercise, setProgram, program, workout, viewo
         <div
           ref={provided.innerRef}
           {...provided.draggableProps}
-          className={`bg-white p-4 border-b border-gray-200 ${
+          className={`bg-white pt-4 border-b border-gray-200 ${
             isExerciseComplete && workout.programmed ? "border-l-4 border-l-green-500" : ""
           }`}
         >
           <div className="flex justify-between items-center mb-3">
             <div className="flex items-center">
               {!viewonly && (
-                <div {...provided.dragHandleProps} className="mr-2 cursor-grab">
+                <div {...provided.dragHandleProps} className="mr-2 cursor-grab ml-2">
                   <GripVertical className="h-5 w-5 text-gray-400" />
                 </div>
               )}
