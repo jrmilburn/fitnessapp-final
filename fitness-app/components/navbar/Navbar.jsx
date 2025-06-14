@@ -7,6 +7,7 @@ import { useSession, signIn, signOut } from "next-auth/react"
 import { ChevronDown, ChevronRight, LogOut, User, Settings, Menu, X } from 'lucide-react'
 import NAVIGATION from "./Navigation"
 import UserProfile from "./UserProfile"
+import InstallPWAButton from "../InstallPWAButton"
 
 const Sidebar = ({ children }) => {
   const pathname = usePathname()
@@ -172,7 +173,8 @@ const Sidebar = ({ children }) => {
         </div>
 
         {/* Sidebar footer */}
-        <div className="absolute bottom-0 w-full border-t border-slate-200 p-4 text-center text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
+        <div className="absolute bottom-0 w-full border-t border-slate-200 p-4 text-center text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400 flex flex-col">
+          <InstallPWAButton />
           © Joe Milburn {new Date().getFullYear()}
         </div>
       </aside>

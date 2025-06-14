@@ -14,13 +14,6 @@ const NAVIGATION = [
   { segment: "program",     title: "Programmes",  icon: <Library    size={18} /> },
   { segment: "exercises",   title: "Exercises",   icon: <ListChecks size={18} /> },
   { kind: "divider" },
-  { kind: "header", title: "Activities" },
-  {
-    segment: "activities",
-    title: "Activites",
-    icon: <Activity size={18} />,
-  },
-  { kind: "divider" },
   { kind: "header", title: "Analytics" },
   {
     segment: "analytics",
