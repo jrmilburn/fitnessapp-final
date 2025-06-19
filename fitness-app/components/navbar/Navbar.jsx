@@ -213,7 +213,7 @@ const Sidebar = ({ children }) => {
                 </button>
 
                 {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 dark:bg-slate-800 dark:ring-slate-700">
+                  <div className="absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 dark:bg-slate-800 dark:ring-slate-700 z-[10000]">
                     <div className="border-b border-slate-200 px-4 py-2 dark:border-slate-700">
                       <p className="text-sm font-medium text-slate-900 dark:text-slate-200">
                         {user.name || "User"}

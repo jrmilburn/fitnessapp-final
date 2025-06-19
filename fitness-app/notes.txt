@@ -7,4 +7,6 @@ Next to implement
 5. Professionalise landing page
 6. Formalise exercise choices X
 7. Improve mobile UI
+    - Updated new and mobile pages
+    - still to update popups and other pages
 
