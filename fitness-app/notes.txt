@@ -8,5 +8,6 @@ Next to implement
 6. Formalise exercise choices X
 7. Improve mobile UI
     - Updated new and mobile pages
-    - still to update popups and other pages
+    - still to update popups and other pages X
+8. On workout page, automatically update placeholder on next set with weight from previous set. When clicked, automatically fill the weight at that value
 

@@ -4,7 +4,6 @@ import { useState } from "react"
 import { Draggable } from "@hello-pangea/dnd"
 import Set from "./set"
 import { MoreHorizontal, Edit, Trash2, RefreshCw, GripVertical } from "lucide-react"
-import { toast } from "react-hot-toast"
 
 export default function Exercise({ exercise, setProgram, program, workout, viewonly, index }) {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -24,6 +23,19 @@ export default function Exercise({ exercise, setProgram, program, workout, viewo
     .find((ex) => ex.id === exercise.id)
 
   const isExerciseComplete = currentExercise?.sets?.every((set) => set.complete)
+
+  // Get the last completed set for smart placeholders
+  const getLastCompletedSet = (currentIndex) => {
+    const sortedSets = exercise?.sets?.slice().sort((a, b) => a.setNo - b.setNo) || []
+
+    // Look for the most recent completed set before the current index
+    for (let i = currentIndex - 1; i >= 0; i--) {
+      if (sortedSets[i]?.complete && sortedSets[i]?.weight && sortedSets[i]?.reps) {
+        return sortedSets[i]
+      }
+    }
+    return null
+  }
 
   // Fetch muscle groups and exercise templates
   const fetchData = async () => {
@@ -46,7 +58,6 @@ export default function Exercise({ exercise, setProgram, program, workout, viewo
       }
     } catch (error) {
       console.error("Error fetching data:", error)
-      toast.error("Failed to load exercise templates")
     } finally {
       setIsLoading(false)
     }
@@ -73,7 +84,7 @@ export default function Exercise({ exercise, setProgram, program, workout, viewo
   // Update exercise with selected template
   const updateExercise = async () => {
     if (!selectedTemplate) {
-      toast.error("Please select an exercise template")
+      console.error("Please select an exercise template")
       return
     }
 
@@ -101,10 +112,9 @@ export default function Exercise({ exercise, setProgram, program, workout, viewo
       setSelectedMuscleGroup("")
       setSearchTerm("")
 
-      toast.success(updateAll ? "Updated all upcoming exercises" : "Updated exercise")
+      console.log(updateAll ? "Updated all upcoming exercises" : "Updated exercise")
     } catch (error) {
       console.error("Error updating exercise:", error)
-      toast.error("Failed to update exercise")
     }
   }
 
@@ -125,12 +135,13 @@ export default function Exercise({ exercise, setProgram, program, workout, viewo
       const data = await response.json()
       setProgram(data.program)
       setMenuOpen(false)
-      toast.success("Exercise removed")
+      console.log("Exercise removed")
     } catch (error) {
       console.error("Error removing exercise:", error)
-      toast.error("Failed to remove exercise")
     }
   }
+
+  const sortedSets = exercise?.sets?.slice().sort((a, b) => a.setNo - b.setNo) || []
 
   return (
     <Draggable draggableId={exercise.id} index={index}>
@@ -167,7 +178,7 @@ export default function Exercise({ exercise, setProgram, program, workout, viewo
                 {menuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20 border border-gray-200">
                     <button
-                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="flex items-center w-full px-2 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       onClick={() => {
                         setUpdateAll(true)
                         setChangeExerciseModalOpen(true)
@@ -178,7 +189,7 @@ export default function Exercise({ exercise, setProgram, program, workout, viewo
                       Change All Upcoming
                     </button>
                     <button
-                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="flex items-center w-full px-2 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       onClick={() => {
                         setUpdateAll(false)
                         setChangeExerciseModalOpen(true)
@@ -210,19 +221,18 @@ export default function Exercise({ exercise, setProgram, program, workout, viewo
                 <div className="col-span-3 text-center">Done</div>
               </div>
 
-              {exercise?.sets
-                ?.slice()
-                .sort((a, b) => a.setNo - b.setNo)
-                .map((set, setIndex) => (
-                  <Set
-                    key={set.id || setIndex}
-                    set={set}
-                    setProgram={setProgram}
-                    exerciseId={exercise.id}
-                    viewonly={viewonly}
-                    index={setIndex}
-                  />
-                ))}
+              {sortedSets.map((set, setIndex) => (
+                <Set
+                  key={set.id || setIndex}
+                  set={set}
+                  setProgram={setProgram}
+                  exerciseId={exercise.id}
+                  viewonly={viewonly}
+                  index={setIndex}
+                  previousCompletedSet={getLastCompletedSet(setIndex)}
+                  allSets={sortedSets}
+                />
+              ))}
             </div>
           ) : (
             <div className="mt-4 py-3 px-4 bg-gray-50 rounded-md text-sm text-gray-600 italic">
@@ -232,7 +242,7 @@ export default function Exercise({ exercise, setProgram, program, workout, viewo
 
           {/* Change Exercise Modal */}
           {changeExerciseModalOpen && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div className="fixed inset-0 bg-black/20 z-50 flex items-center justify-center p-4">
               <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-auto">
                 <div className="p-4 border-b border-gray-200">
                   <div className="flex justify-between items-center">

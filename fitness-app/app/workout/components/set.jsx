@@ -3,11 +3,78 @@
 import { useState, useEffect } from "react"
 import { MoreVertical, Plus, Trash2 } from "lucide-react"
 
-export default function Set({ set, setProgram, exerciseId, viewonly, index }) {
+export default function Set({ set, setProgram, exerciseId, viewonly, index, previousCompletedSet, allSets }) {
   const [weight, setWeight] = useState(set?.weight || "")
   const [reps, setReps] = useState(set?.reps || "")
   const [confirmed, setConfirmed] = useState(set?.complete)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [isUsingPlaceholder, setIsUsingPlaceholder] = useState(false)
+
+  // Smart placeholder logic
+  const getSmartPlaceholder = (field) => {
+    if (previousCompletedSet) {
+      return field === "weight" ? previousCompletedSet.weight : previousCompletedSet.reps
+    }
+    return "0"
+  }
+
+  // Auto-focus next incomplete set when current set is completed
+  useEffect(() => {
+    if (confirmed && !viewonly) {
+      const nextIncompleteSet = allSets?.find((s, idx) => idx > index && !s.complete)
+      if (nextIncompleteSet) {
+        // Small delay to ensure DOM is updated
+        setTimeout(() => {
+          const nextSetElement = document.querySelector(`[data-set-id="${nextIncompleteSet.id}"] input[type="number"]`)
+          if (nextSetElement) {
+            nextSetElement.focus()
+          }
+        }, 100)
+      }
+    }
+  }, [confirmed, allSets, index, viewonly])
+
+  // Handle placeholder usage
+  const handleInputFocus = (field) => {
+    if (!weight && !reps && previousCompletedSet && !confirmed) {
+      if (field === "weight" && !weight) {
+        setWeight(previousCompletedSet.weight.toString())
+        setIsUsingPlaceholder(true)
+      } else if (field === "reps" && !reps) {
+        setReps(previousCompletedSet.reps.toString())
+        setIsUsingPlaceholder(true)
+      }
+    }
+  }
+
+  // Handle quick complete with placeholders
+  const handleQuickComplete = async () => {
+    if (!confirmed && previousCompletedSet && (!weight || !reps)) {
+      const finalWeight = weight || previousCompletedSet.weight.toString()
+      const finalReps = reps || previousCompletedSet.reps.toString()
+
+      setWeight(finalWeight)
+      setReps(finalReps)
+
+      // Update the set with placeholder values
+      const response = await fetch("/api/set", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          weight: Number.parseFloat(finalWeight) || 0,
+          reps: Number.parseInt(finalReps) || 0,
+          complete: true,
+          setId: set.id,
+        }),
+      })
+
+      if (response.ok) {
+        setConfirmed(true)
+      }
+    } else {
+      updateSet()
+    }
+  }
 
   useEffect(() => {
     const targetSetId = set.id
@@ -43,8 +110,9 @@ export default function Set({ set, setProgram, exerciseId, viewonly, index }) {
       }),
     })
 
-    setConfirmed(newCompleted)
-    console.log(await response.json())
+    if (response.ok) {
+      setConfirmed(newCompleted)
+    }
   }
 
   const removeSet = async () => {
@@ -54,7 +122,6 @@ export default function Set({ set, setProgram, exerciseId, viewonly, index }) {
     })
 
     if (response.ok) {
-      // Remove the set with set.id from the program state
       setProgram((prevProgram) => ({
         ...prevProgram,
         weeks: prevProgram.weeks.map((week) => ({
@@ -85,11 +152,8 @@ export default function Set({ set, setProgram, exerciseId, viewonly, index }) {
     })
 
     if (response.ok) {
-      // Assume the API returns the newly created set as JSON.
       const newSet = await response.json()
 
-      // Update the program state by finding the exercise with the matching exerciseId
-      // and appending the new set to its sets array.
       setProgram((prevProgram) => ({
         ...prevProgram,
         weeks: prevProgram.weeks.map((week) => ({
@@ -112,9 +176,28 @@ export default function Set({ set, setProgram, exerciseId, viewonly, index }) {
     }
   }
 
+  // Enhanced styling for better UX
+  const getInputClassName = (hasValue, field) => {
+    let baseClass =
+      "w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+
+    if (confirmed) {
+      baseClass += " bg-green-50 border-green-300"
+    } else if (!hasValue && previousCompletedSet) {
+      baseClass += " border-blue-200 bg-blue-50"
+    } else {
+      baseClass += " border-gray-300"
+    }
+
+    return baseClass
+  }
+
   return (
     <div
-      className={`grid grid-cols-12 gap-2 items-center py-2 ${index % 2 === 0 ? "bg-gray-50" : "bg-white"} rounded-md w-full`}
+      className={`grid grid-cols-12 gap-2 items-center py-2 ${
+        index % 2 === 0 ? "bg-gray-50" : "bg-white"
+      } rounded-md w-full ${confirmed ? "bg-green-50" : ""}`}
+      data-set-id={set.id}
     >
       {!viewonly && (
         <div className="col-span-1 relative">
@@ -150,10 +233,16 @@ export default function Set({ set, setProgram, exerciseId, viewonly, index }) {
         <input
           type="number"
           value={weight}
-          onChange={(e) => setWeight(e.target.value)}
+          onChange={(e) => {
+            setWeight(e.target.value)
+            setIsUsingPlaceholder(false)
+          }}
+          onFocus={() => handleInputFocus("weight")}
           disabled={viewonly}
-          placeholder="0"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          placeholder={getSmartPlaceholder("weight")}
+          className={getInputClassName(weight, "weight")}
+          step="0.5"
+          min="0"
         />
       </div>
 
@@ -161,20 +250,36 @@ export default function Set({ set, setProgram, exerciseId, viewonly, index }) {
         <input
           type="number"
           value={reps}
-          onChange={(e) => setReps(e.target.value)}
+          onChange={(e) => {
+            setReps(e.target.value)
+            setIsUsingPlaceholder(false)
+          }}
+          onFocus={() => handleInputFocus("reps")}
           disabled={viewonly}
-          placeholder="0"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          placeholder={getSmartPlaceholder("reps")}
+          className={getInputClassName(reps, "reps")}
+          min="0"
         />
       </div>
 
       {!viewonly && (
         <div className="col-span-3 flex justify-center">
           <button
-            onClick={updateSet}
-            className={`w-6 h-6 rounded-md border ${
-              confirmed ? "bg-green-500 border-green-600 text-white" : "bg-white border-gray-300 hover:bg-gray-100"
-            } flex items-center justify-center transition-colors`}
+            onClick={handleQuickComplete}
+            className={`w-6 h-6 rounded-md border transition-all duration-200 ${
+              confirmed
+                ? "bg-green-500 border-green-600 text-white shadow-sm"
+                : previousCompletedSet && (!weight || !reps)
+                  ? "bg-blue-100 border-blue-300 hover:bg-blue-200"
+                  : "bg-white border-gray-300 hover:bg-gray-100"
+            } flex items-center justify-center`}
+            title={
+              confirmed
+                ? "Set completed"
+                : previousCompletedSet && (!weight || !reps)
+                  ? `Quick complete with ${getSmartPlaceholder("weight")}kg × ${getSmartPlaceholder("reps")} reps`
+                  : "Mark as complete"
+            }
           >
             {confirmed && (
               <svg

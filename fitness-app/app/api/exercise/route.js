@@ -282,3 +282,82 @@ export async function DELETE(request) {
     return NextResponse.json({ error: "Failed to delete exercise" }, { status: 500 })
   }
 }
+
+export async function POST(request) {
+  try {
+    // Authenticate the user
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    // Get the user
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { id: true, currentProgramId: true },
+    })
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 })
+    }
+
+    const { name, muscle, workoutId, templateId, programId } = await request.json();
+
+    const exerciseTemplate = await prisma.exerciseTemplate.findUnique({
+      where: { id: templateId }
+    })
+
+    const exerciseCount = await prisma.exercise.count({
+      where: { workoutId: workoutId }
+    })
+
+    const newExercise = await prisma.exercise.create({
+      data: {
+        name: name,
+        exerciseNo: exerciseCount + 1,
+        templateId: exerciseTemplate.id,
+        muscle: muscle, 
+        workoutId: workoutId
+      }
+    })
+
+    const initialSets = await prisma.set.createMany({
+      data: [
+        {
+          setNo: 0,
+          exerciseId: newExercise.id
+        },        {
+          setNo: 1,
+          exerciseId: newExercise.id
+        }
+      ]
+    })
+
+    const updatedProgram = await prisma.program.findUnique({
+      where: {
+        id: programId
+      },
+      include: {
+        weeks: {
+          include: {
+            workouts: {
+              include: {
+                exercises: {
+                  include: {
+                    sets: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    })
+
+    return NextResponse.json({ success: true, program: updatedProgram })
+
+  } catch(error) {
+      console.error("Error adding exercise:", error)
+      return NextResponse.json({ error: "Failed to add exercise" }, { status: 500 })
+  }
+}
