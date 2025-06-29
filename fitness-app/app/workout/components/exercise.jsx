@@ -170,6 +170,8 @@ export default function Exercise({ exercise, setProgram, program, workout, viewo
                   index={setIndex}
                   previousCompletedSet={getLastCompletedSet(setIndex)}
                   allSets={sortedSets}
+                  program={program}
+                  exerciseName={exercise.name}
                 />
               ))}
             </div>
