@@ -366,7 +366,6 @@ export default function SetV2({
             </button>
           )}
         </div>
-        <div className="text-xs text-center text-gray-500">kg</div>
       </div>
 
       {/* Reps Input with Controls */}
@@ -400,7 +399,6 @@ export default function SetV2({
             </button>
           )}
         </div>
-        <div className="text-xs text-center text-gray-500">reps</div>
       </div>
 
       {/* Action Buttons */}
