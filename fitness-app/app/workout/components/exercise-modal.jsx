@@ -76,7 +76,7 @@ function CustomSelect({ value, onValueChange, options, placeholder, className = 
 function SkeletonRow() {
   return (
     <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 animate-pulse">
-      <div className="flex-1">
+      <div className="flex-1 min-w-0">
         <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-3/4 mb-2"></div>
         <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-1/2"></div>
       </div>
@@ -138,15 +138,15 @@ export default function ExerciseModal({
     return () => window.removeEventListener("resize", checkMobile)
   }, [])
 
-  // Prevent body scroll when modal is open on mobile
+  // Prevent body scroll when modal is open
   useEffect(() => {
-    if (isOpen && isMobile) {
+    if (isOpen) {
       document.body.style.overflow = "hidden"
       return () => {
         document.body.style.overflow = "unset"
       }
     }
-  }, [isOpen, isMobile])
+  }, [isOpen])
 
   // Focus management
   useEffect(() => {
@@ -304,179 +304,326 @@ export default function ExerciseModal({
     ...muscleGroups.map((group) => ({ value: group.id, label: group.name })),
   ]
 
-  const modalContent = (
-    <div className="flex flex-col h-full bg-white dark:bg-gray-900" ref={modalRef}>
-      {/* Sticky Header */}
-      <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 p-4 md:p-6">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex-1 min-w-0">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white truncate">{title}</h2>
-            {description && <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{description}</p>}
-          </div>
-          <button
-            ref={firstFocusableRef}
-            onClick={handleClose}
-            className="flex-shrink-0 ml-2 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-
-        {/* Filter Bar */}
-        <div className="flex flex-col md:flex-row gap-3">
-          <div className="flex-1 md:flex-[2] relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search exercises..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-            />
-          </div>
-          <div className="md:flex-1">
-            <CustomSelect
-              value={selectedMuscleGroup}
-              onValueChange={handleMuscleGroupChange}
-              options={muscleGroupOptions}
-              placeholder="All Muscle Groups"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Exercise List */}
-      <div className="flex-1 overflow-hidden">
-        <div className="h-full md:h-64 overflow-y-auto" role="region" aria-live="polite" aria-label="Exercise list">
-          {isLoading ? (
-            <div>
-              {Array.from({ length: 5 }).map((_, i) => (
-                <SkeletonRow key={i} />
-              ))}
-            </div>
-          ) : filteredTemplates.length === 0 ? (
-            <EmptyState />
-          ) : (
-            <div>
-              {filteredTemplates.map((template) => (
-                <div
-                  key={template.id}
-                  className={`flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 ${
-                    selectedTemplate?.id === template.id ? "bg-blue-50 dark:bg-blue-900/20" : ""
-                  }`}
-                  onClick={() => setSelectedTemplate(template)}
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sm text-gray-900 dark:text-white truncate">{template.name}</div>
-                    {template.shortDescription && (
-                      <div className="text-xs text-gray-500 dark:text-gray-400 truncate mt-1">
-                        {template.shortDescription}
-                      </div>
-                    )}
-                  </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 px-2 min-w-0 flex-shrink-0">
-                    {template.muscleGroup.name}
-                  </div>
-                  <button
-                    className={`ml-2 flex-shrink-0 px-3 py-1 text-sm rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      selectedTemplate?.id === template.id
-                        ? "bg-blue-600 text-white hover:bg-blue-700"
-                        : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                    }`}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setSelectedTemplate(template)
-                    }}
-                  >
-                    {selectedTemplate?.id === template.id ? "Selected" : "Select"}
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Update All Option */}
-      {showUpdateAllOption && (
-        <div className="px-4 md:px-6 pb-4">
-          <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
-            <label className="flex items-center space-x-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={updateAll}
-                onChange={(e) => onUpdateAllChange(e.target.checked)}
-                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-              />
-              <span className="text-sm font-medium text-gray-900 dark:text-white">Update all upcoming exercises</span>
-            </label>
-          </div>
-        </div>
-      )}
-
-      {/* Footer */}
-      <div className="sticky bottom-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 p-4 md:p-6">
-        <div className="flex justify-end gap-2">
-          <button
-            onClick={handleClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleConfirm}
-            disabled={!selectedTemplate}
-            className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              selectedTemplate
-                ? "bg-blue-600 hover:bg-blue-700 text-white"
-                : "bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed"
-            }`}
-          >
-            {confirmButtonText}
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-
   // Mobile bottom sheet
   if (isMobile) {
     return (
-      <div
-        className={`fixed inset-0 z-50 transition-all duration-300 ${
-          isOpen && !isClosing ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
-      >
-        <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={handleClose} />
+      <div className="fixed inset-0 z-50 overflow-hidden">
+        {/* Backdrop */}
         <div
-          className={`absolute bottom-0 left-0 right-0 bg-white dark:bg-gray-900 rounded-t-2xl shadow-lg transition-transform duration-300 h-[100vh] ${
-            isOpen && !isClosing ? "translate-y-0" : "translate-y-full"
+          className={`fixed inset-0 bg-black/20 backdrop-blur-sm transition-opacity duration-300 ${
+            isOpen && !isClosing ? "opacity-100" : "opacity-0"
           }`}
-        >
-          {/* Drag handle */}
-          <div className="flex justify-center pt-2 pb-1">
-            <div className="w-8 h-1 bg-gray-300 dark:bg-gray-600 rounded-full" />
+          onClick={handleClose}
+        />
+
+        {/* Bottom Sheet Container */}
+        <div className="fixed inset-x-0 bottom-0 flex flex-col h-screen max-h-screen">
+          <div
+            className={`flex flex-col bg-white dark:bg-gray-900 rounded-t-2xl shadow-lg transition-transform duration-300 h-full w-full overflow-hidden ${
+              isOpen && !isClosing ? "translate-y-0" : "translate-y-full"
+            }`}
+            ref={modalRef}
+          >
+            {/* Drag handle */}
+            <div className="flex justify-center pt-2 pb-1 flex-shrink-0">
+              <div className="w-8 h-1 bg-gray-300 dark:bg-gray-600 rounded-full" />
+            </div>
+
+            {/* Header - Fixed */}
+            <div className="flex-shrink-0 border-b border-gray-200 dark:border-gray-700 p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex-1 min-w-0 pr-2">
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white truncate">{title}</h2>
+                  {description && (
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 truncate">{description}</p>
+                  )}
+                </div>
+                <button
+                  ref={firstFocusableRef}
+                  onClick={handleClose}
+                  className="flex-shrink-0 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              {/* Filter Bar - Fixed under header */}
+              <div className="space-y-3">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
+                  <input
+                    type="text"
+                    placeholder="Search exercises..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                  />
+                </div>
+                <CustomSelect
+                  value={selectedMuscleGroup}
+                  onValueChange={handleMuscleGroupChange}
+                  options={muscleGroupOptions}
+                  placeholder="All Muscle Groups"
+                  className="w-full"
+                />
+              </div>
+            </div>
+
+            {/* Exercise List - Scrollable */}
+            <div className="flex-1 overflow-y-auto min-h-0" role="region" aria-live="polite" aria-label="Exercise list">
+              {isLoading ? (
+                <div>
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <SkeletonRow key={i} />
+                  ))}
+                </div>
+              ) : filteredTemplates.length === 0 ? (
+                <EmptyState />
+              ) : (
+                <div>
+                  {filteredTemplates.map((template) => (
+                    <div
+                      key={template.id}
+                      className={`flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 ${
+                        selectedTemplate?.id === template.id ? "bg-blue-50 dark:bg-blue-900/20" : ""
+                      }`}
+                      onClick={() => setSelectedTemplate(template)}
+                    >
+                      <div className="flex-1 min-w-0 pr-2">
+                        <div className="font-medium text-sm text-gray-900 dark:text-white truncate">
+                          {template.name}
+                        </div>
+                        {template.shortDescription && (
+                          <div className="text-xs text-gray-500 dark:text-gray-400 truncate mt-1">
+                            {template.shortDescription}
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 px-2 flex-shrink-0 max-w-20 truncate">
+                        {template.muscleGroup.name}
+                      </div>
+                      <button
+                        className={`flex-shrink-0 px-3 py-1 text-sm rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                          selectedTemplate?.id === template.id
+                            ? "bg-blue-600 text-white hover:bg-blue-700"
+                            : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                        }`}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setSelectedTemplate(template)
+                        }}
+                      >
+                        {selectedTemplate?.id === template.id ? "Selected" : "Select"}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Update All Option - Fixed above footer */}
+            {showUpdateAllOption && (
+              <div className="flex-shrink-0 px-4 pb-4">
+                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={updateAll}
+                      onChange={(e) => onUpdateAllChange(e.target.checked)}
+                      className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 flex-shrink-0"
+                    />
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">
+                      Update all upcoming exercises
+                    </span>
+                  </label>
+                </div>
+              </div>
+            )}
+
+            {/* Footer - Fixed */}
+            <div className="flex-shrink-0 border-t border-gray-200 dark:border-gray-700 p-4">
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={handleClose}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 flex-shrink-0"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirm}
+                  disabled={!selectedTemplate}
+                  className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 flex-shrink-0 ${
+                    selectedTemplate
+                      ? "bg-blue-600 hover:bg-blue-700 text-white"
+                      : "bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  {confirmButtonText}
+                </button>
+              </div>
+            </div>
           </div>
-          {modalContent}
         </div>
       </div>
     )
   }
 
-  // Desktop dialog
+  // Desktop dialog - Fixed positioning with proper constraints
   return (
-    <div
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-300 ${
-        isOpen && !isClosing ? "opacity-100" : "opacity-0 pointer-events-none"
-      }`}
-    >
-      <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={handleClose} />
+    <div className="fixed inset-0 z-50 overflow-hidden">
+      {/* Backdrop */}
       <div
-        className={`relative bg-white dark:bg-gray-900 rounded-lg shadow-lg max-w-xl w-full max-h-[90vh] overflow-hidden transition-all duration-300 ${
-          isOpen && !isClosing ? "scale-100" : "scale-95"
+        className={`fixed inset-0 bg-black/20 backdrop-blur-sm transition-opacity duration-300 ${
+          isOpen && !isClosing ? "opacity-100" : "opacity-0"
         }`}
-      >
-        {modalContent}
+        onClick={handleClose}
+      />
+
+      {/* Modal Container */}
+      <div className="fixed inset-0 flex items-center justify-center p-4">
+        <div
+          className={`relative bg-white dark:bg-gray-900 rounded-lg shadow-lg w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden transition-all duration-300 ${
+            isOpen && !isClosing ? "scale-100 opacity-100" : "scale-95 opacity-0"
+          }`}
+          ref={modalRef}
+        >
+          {/* Header - Fixed */}
+          <div className="flex-shrink-0 border-b border-gray-200 dark:border-gray-700 p-6">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex-1 min-w-0 pr-2">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white truncate">{title}</h2>
+                {description && <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 truncate">{description}</p>}
+              </div>
+              <button
+                ref={firstFocusableRef}
+                onClick={handleClose}
+                className="flex-shrink-0 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Filter Bar */}
+            <div className="flex gap-3">
+              <div className="flex-[2] relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
+                <input
+                  type="text"
+                  placeholder="Search exercises..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                />
+              </div>
+              <div className="flex-1">
+                <CustomSelect
+                  value={selectedMuscleGroup}
+                  onValueChange={handleMuscleGroupChange}
+                  options={muscleGroupOptions}
+                  placeholder="All Muscle Groups"
+                  className="w-full"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Exercise List - Scrollable with fixed height */}
+          <div
+            className="h-64 overflow-y-auto flex-shrink-0"
+            role="region"
+            aria-live="polite"
+            aria-label="Exercise list"
+          >
+            {isLoading ? (
+              <div className="w-full">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <SkeletonRow key={i} />
+                ))}
+              </div>
+            ) : filteredTemplates.length === 0 ? (
+              <EmptyState />
+            ) : (
+              <div className="w-full">
+                {filteredTemplates.map((template) => (
+                  <div
+                    key={template.id}
+                    className={`flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 cursor-pointer transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 ${
+                      selectedTemplate?.id === template.id ? "bg-blue-50 dark:bg-blue-900/20" : ""
+                    }`}
+                    onClick={() => setSelectedTemplate(template)}
+                  >
+                    <div className="flex-1 min-w-0 pr-2">
+                      <div className="font-medium text-sm text-gray-900 dark:text-white truncate">{template.name}</div>
+                      {template.shortDescription && (
+                        <div className="text-xs text-gray-500 dark:text-gray-400 truncate mt-1">
+                          {template.shortDescription}
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 px-2 flex-shrink-0 max-w-24 truncate">
+                      {template.muscleGroup.name}
+                    </div>
+                    <button
+                      className={`flex-shrink-0 px-3 py-1 text-sm rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        selectedTemplate?.id === template.id
+                          ? "bg-blue-600 text-white hover:bg-blue-700"
+                          : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setSelectedTemplate(template)
+                      }}
+                    >
+                      {selectedTemplate?.id === template.id ? "Selected" : "Select"}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Update All Option */}
+          {showUpdateAllOption && (
+            <div className="flex-shrink-0 px-6 pb-4">
+              <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={updateAll}
+                    onChange={(e) => onUpdateAllChange(e.target.checked)}
+                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 flex-shrink-0"
+                  />
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">
+                    Update all upcoming exercises
+                  </span>
+                </label>
+              </div>
+            </div>
+          )}
+
+          {/* Footer - Fixed */}
+          <div className="flex-shrink-0 border-t border-gray-200 dark:border-gray-700 p-6">
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={handleClose}
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 flex-shrink-0"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirm}
+                disabled={!selectedTemplate}
+                className={`px-4 py-2 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 flex-shrink-0 ${
+                  selectedTemplate
+                    ? "bg-blue-600 hover:bg-blue-700 text-white"
+                    : "bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                }`}
+              >
+                {confirmButtonText}
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )

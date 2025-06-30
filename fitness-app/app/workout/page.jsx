@@ -97,7 +97,7 @@ export default function WorkoutPage() {
 
   return (
     <div className="w-full min-h-screen flex flex-col bg-gray-50">
-      <div className="max-w-2xl mx-auto w-full flex flex-col flex-1">
+      <div className="max-w-2xl mx-auto w-full flex flex-col flex-1 ">
         {program && (
           <WorkoutHeader
             program={program}

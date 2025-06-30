@@ -1,9 +1,9 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
-import { MoreVertical, Plus, Trash2, History, Clock, CheckCircle, Minus } from "lucide-react"
+import { MoreVertical, Plus, Trash2, CheckCircle } from "lucide-react"
 
-export default function SetV2({
+export default function SetV3({
   set,
   setProgram,
   exerciseId,
@@ -18,7 +18,6 @@ export default function SetV2({
   const [reps, setReps] = useState(set?.reps || "")
   const [confirmed, setConfirmed] = useState(set?.complete)
   const [menuOpen, setMenuOpen] = useState(false)
-  const [showHistoryModal, setShowHistoryModal] = useState(false)
 
   // Find the most recent completed set from the same exercise across all workouts
   const mostRecentCompletedSet = useMemo(() => {
@@ -47,36 +46,6 @@ export default function SetV2({
 
     return mostRecentSet
   }, [program, exerciseName, set.id])
-
-  // Get data source information
-  const getDataSource = () => {
-    if (mostRecentCompletedSet) {
-      const date = new Date(mostRecentCompletedSet.createdAt)
-      return {
-        type: "history",
-        label: "Last time",
-        date: date.toLocaleDateString(),
-        icon: History,
-        color: "purple",
-        weight: mostRecentCompletedSet.weight,
-        reps: mostRecentCompletedSet.reps,
-      }
-    }
-    if (previousCompletedSet) {
-      return {
-        type: "current",
-        label: "Previous set",
-        date: "This workout",
-        icon: Clock,
-        color: "blue",
-        weight: previousCompletedSet.weight,
-        reps: previousCompletedSet.reps,
-      }
-    }
-    return null
-  }
-
-  const dataSource = getDataSource()
 
   // Enhanced smart placeholder logic with increment
   const getSmartPlaceholder = (field) => {
@@ -107,44 +76,22 @@ export default function SetV2({
     }
   }, [confirmed, allSets, index, viewonly])
 
-  // Handle using historical data
-  const useHistoricalData = () => {
-    if (dataSource) {
-      setWeight(dataSource.weight.toString())
-      setReps(dataSource.reps.toString())
-    }
-    setShowHistoryModal(false)
-  }
-
-  // Handle using incremented placeholder values
-  const useIncrementedValues = () => {
-    const weightPlaceholder = getSmartPlaceholder("weight")
-    const repsPlaceholder = getSmartPlaceholder("reps")
-    if (weightPlaceholder) setWeight(weightPlaceholder.toString())
-    if (repsPlaceholder) setReps(repsPlaceholder.toString())
-  }
-
-  // Weight increment/decrement functions
-  const adjustWeight = (increment) => {
-    const currentWeight = Number.parseFloat(weight) || 0
-    const newWeight = Math.max(0, currentWeight + increment)
-    setWeight(newWeight.toString())
-  }
-
-  // Reps increment/decrement functions
-  const adjustReps = (increment) => {
-    const currentReps = Number.parseInt(reps) || 0
-    const newReps = Math.max(0, currentReps + increment)
-    setReps(newReps.toString())
-  }
-
-  // Handle quick complete with enhanced placeholder logic
+  // Handle quick complete with proper value handling
   const handleQuickComplete = async () => {
-    if (!confirmed && (!weight || !reps)) {
-      // Use incremented values if no input provided
-      const finalWeight = weight || getSmartPlaceholder("weight").toString()
-      const finalReps = reps || getSmartPlaceholder("reps").toString()
+    if (!confirmed) {
+      // Use current values or placeholders, but don't concatenate
+      let finalWeight = weight
+      let finalReps = reps
 
+      // If no values entered, use placeholders
+      if (!finalWeight) {
+        finalWeight = getSmartPlaceholder("weight").toString()
+      }
+      if (!finalReps) {
+        finalReps = getSmartPlaceholder("reps").toString()
+      }
+
+      // Update local state first
       setWeight(finalWeight)
       setReps(finalReps)
 
@@ -163,6 +110,7 @@ export default function SetV2({
         setConfirmed(true)
       }
     } else {
+      // Toggle completion
       updateSet()
     }
   }
@@ -178,7 +126,14 @@ export default function SetV2({
           exercises: workout.exercises.map((exercise) => ({
             ...exercise,
             sets: exercise.sets.map((s) =>
-              s.id === targetSetId ? { ...s, complete: confirmed, weight: weight, reps: reps } : s,
+              s.id === targetSetId
+                ? {
+                    ...s,
+                    complete: confirmed,
+                    weight: Number.parseFloat(weight) || 0,
+                    reps: Number.parseInt(reps) || 0,
+                  }
+                : s,
             ),
           })),
         })),
@@ -271,8 +226,8 @@ export default function SetV2({
 
     if (confirmed) {
       baseClass += " bg-green-50 border-green-300"
-    } else if (!hasValue && dataSource) {
-      if (dataSource.type === "history") {
+    } else if (!hasValue && (mostRecentCompletedSet || previousCompletedSet)) {
+      if (mostRecentCompletedSet) {
         baseClass += " border-purple-200 bg-purple-50"
       } else {
         baseClass += " border-blue-200 bg-blue-50"
@@ -291,10 +246,10 @@ export default function SetV2({
       } rounded-lg w-full ${confirmed ? "bg-green-50" : ""} relative`}
       data-set-id={set.id}
     >
-      {/* Completed indicator */}
+      {/* Completed indicator - Fixed positioning to avoid overflow */}
       {confirmed && (
-        <div className="absolute -top-2 -right-2 z-10">
-          <div className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 border border-green-200 shadow-sm">
+        <div className="absolute -top-1 right-2 z-10">
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 border border-green-200 shadow-sm">
             <CheckCircle className="h-3 w-3" />
             <span>Done</span>
           </div>
@@ -334,87 +289,56 @@ export default function SetV2({
         </div>
       )}
 
-      {/* Weight Input with Controls */}
-      <div className={`${viewonly ? "col-span-5" : "col-span-4"} space-y-2`}>
-        <div className="flex items-center gap-1">
-          {!viewonly && (
-            <button
-              onClick={() => adjustWeight(-2.5)}
-              className="p-1.5 rounded-md hover:bg-gray-200 active:bg-gray-300 transition-colors touch-manipulation"
-              disabled={confirmed}
-            >
-              <Minus className="h-3.5 w-3.5 text-gray-600" />
-            </button>
-          )}
-          <input
-            type="number"
-            value={weight}
-            onChange={(e) => setWeight(e.target.value)}
-            disabled={viewonly || confirmed}
-            placeholder={getSmartPlaceholder("weight")}
-            className={getInputClassName(weight)}
-            step="0.5"
-            min="0"
-          />
-          {!viewonly && (
-            <button
-              onClick={() => adjustWeight(2.5)}
-              className="p-1.5 rounded-md hover:bg-gray-200 active:bg-gray-300 transition-colors touch-manipulation"
-              disabled={confirmed}
-            >
-              <Plus className="h-3.5 w-3.5 text-gray-600" />
-            </button>
-          )}
-        </div>
+      {/* Weight Input */}
+      <div className={`${viewonly ? "col-span-5" : "col-span-4"}`}>
+        <input
+          type="number"
+          value={weight}
+          onChange={(e) => setWeight(e.target.value)}
+          disabled={viewonly || confirmed}
+          placeholder={getSmartPlaceholder("weight")}
+          className={getInputClassName(weight)}
+          step="0.5"
+          min="0"
+        />
       </div>
 
-      {/* Reps Input with Controls */}
-      <div className={`${viewonly ? "col-span-5" : "col-span-4"} space-y-2`}>
-        <div className="flex items-center gap-1">
-          {!viewonly && (
-            <button
-              onClick={() => adjustReps(-1)}
-              className="p-1.5 rounded-md hover:bg-gray-200 active:bg-gray-300 transition-colors touch-manipulation"
-              disabled={confirmed}
-            >
-              <Minus className="h-3.5 w-3.5 text-gray-600" />
-            </button>
-          )}
-          <input
-            type="number"
-            value={reps}
-            onChange={(e) => setReps(e.target.value)}
-            disabled={viewonly || confirmed}
-            placeholder={getSmartPlaceholder("reps")}
-            className={getInputClassName(reps)}
-            min="0"
-          />
-          {!viewonly && (
-            <button
-              onClick={() => adjustReps(1)}
-              className="p-1.5 rounded-md hover:bg-gray-200 active:bg-gray-300 transition-colors touch-manipulation"
-              disabled={confirmed}
-            >
-              <Plus className="h-3.5 w-3.5 text-gray-600" />
-            </button>
-          )}
-        </div>
+      {/* Reps Input */}
+      <div className={`${viewonly ? "col-span-5" : "col-span-4"}`}>
+        <input
+          type="number"
+          value={reps}
+          onChange={(e) => setReps(e.target.value)}
+          disabled={viewonly || confirmed}
+          placeholder={getSmartPlaceholder("reps")}
+          className={getInputClassName(reps)}
+          min="0"
+        />
       </div>
 
-      {/* Action Buttons */}
+      {/* Complete Button */}
       {!viewonly && (
-        <div className="col-span-3 flex flex-col items-center gap-3">
-          {/* Complete Button */}
+        <div className="col-span-3 flex justify-center">
           <button
             onClick={handleQuickComplete}
             className={`w-8 h-8 rounded-md border transition-all duration-200 touch-manipulation ${
               confirmed
                 ? "bg-green-500 border-green-600 text-white shadow-sm"
                 : (!weight || !reps)
-                  ? "bg-blue-100 border-blue-300 hover:bg-blue-200"
+                  ? mostRecentCompletedSet
+                    ? "bg-purple-100 border-purple-300 hover:bg-purple-200"
+                    : "bg-blue-100 border-blue-300 hover:bg-blue-200"
                   : "bg-white border-gray-300 hover:bg-gray-100"
             } flex items-center justify-center`}
-            title={confirmed ? "Set completed" : "Mark as complete"}
+            title={
+              confirmed
+                ? "Set completed - click to undo"
+                : !weight || !reps
+                  ? mostRecentCompletedSet
+                    ? `Complete with suggested values: ${getSmartPlaceholder("weight")}kg × ${getSmartPlaceholder("reps")} reps`
+                    : "Complete with suggested values"
+                  : "Mark as complete"
+            }
           >
             {confirmed && (
               <svg
@@ -428,85 +352,7 @@ export default function SetV2({
               </svg>
             )}
           </button>
-
-          {/* History Button */}
-          {dataSource && !confirmed && (
-            <button
-              onClick={() => setShowHistoryModal(true)}
-              className={`p-2 rounded-md border transition-all duration-200 touch-manipulation ${
-                dataSource.type === "history"
-                  ? "bg-purple-100 border-purple-300 hover:bg-purple-200 text-purple-700"
-                  : "bg-blue-100 border-blue-300 hover:bg-blue-200 text-blue-700"
-              }`}
-              title={`Use values from ${dataSource.label.toLowerCase()}`}
-            >
-              <dataSource.icon className="h-4 w-4" />
-            </button>
-          )}
-
-          {/* Use Incremented Values Button */}
-          {!confirmed && (!weight || !reps) && (
-            <button
-              onClick={useIncrementedValues}
-              className="px-2 py-1 rounded-md bg-green-100 border border-green-300 hover:bg-green-200 text-green-700 text-xs font-medium transition-colors touch-manipulation"
-              title="Use suggested incremented values"
-            >
-              +2.5kg
-            </button>
-          )}
         </div>
-      )}
-
-      {/* History Modal */}
-      {showHistoryModal && dataSource && (
-        <>
-          {/* Backdrop */}
-          <div className="fixed inset-0 bg-black/20 z-50" onClick={() => setShowHistoryModal(false)} />
-
-          {/* Modal */}
-          <div className="fixed inset-0 flex items-center justify-center z-60 p-4">
-            <div
-              className={`p-4 rounded-lg shadow-xl border max-w-sm w-full ${
-                dataSource.type === "history" ? "bg-purple-50 border-purple-200" : "bg-blue-50 border-blue-200"
-              }`}
-            >
-              <div className="flex items-center gap-2 mb-3">
-                <dataSource.icon
-                  className={`h-5 w-5 ${dataSource.type === "history" ? "text-purple-600" : "text-blue-600"}`}
-                />
-                <h3 className="font-medium text-gray-900">
-                  {dataSource.type === "history" ? "Historical Data" : "Current Workout"}
-                </h3>
-              </div>
-
-              <div className="space-y-2 mb-4">
-                <div className="text-sm text-gray-600">From: {dataSource.date}</div>
-                <div className="text-lg font-semibold">
-                  {dataSource.weight}kg × {dataSource.reps} reps
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <button
-                  onClick={useHistoricalData}
-                  className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    dataSource.type === "history"
-                      ? "bg-purple-600 text-white hover:bg-purple-700"
-                      : "bg-blue-600 text-white hover:bg-blue-700"
-                  }`}
-                >
-                  Use These Values
-                </button>
-                <button
-                  onClick={() => setShowHistoryModal(false)}
-                  className="px-3 py-2 rounded-md text-sm font-medium bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        </>
       )}
     </div>
   )

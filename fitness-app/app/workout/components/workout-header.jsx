@@ -131,6 +131,7 @@ export default function WorkoutHeader({ program, currentWorkout, setCurrentWorko
           muscle: selectedTemplate.muscleGroup.name,
           workoutId: currentWorkout.id,
           templateId: selectedTemplate.id,
+          programId: program.id
         }),
       })
 
