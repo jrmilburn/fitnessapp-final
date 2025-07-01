@@ -1,9 +1,9 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
-import { MoreVertical, Plus, Trash2, CheckCircle } from "lucide-react"
+import { MoreVertical, Plus, Trash2, CheckCircle, Sparkles } from 'lucide-react'
 
-export default function SetV3({
+export default function SetV4({
   set,
   setProgram,
   exerciseId,
@@ -19,24 +19,24 @@ export default function SetV3({
   const [confirmed, setConfirmed] = useState(set?.complete)
   const [menuOpen, setMenuOpen] = useState(false)
 
-  // Find the most recent completed set from the same exercise across all workouts
-  const mostRecentCompletedSet = useMemo(() => {
+  // Find the most recent exercise instance and get all its completed sets
+  const historicalExerciseData = useMemo(() => {
     if (!program || !exerciseName) return null
 
-    let mostRecentSet = null
+    let mostRecentExercise = null
     let mostRecentDate = null
 
     for (const week of program.weeks) {
       for (const workout of week.workouts) {
         for (const exercise of workout.exercises) {
-          if (exercise.name === exerciseName) {
-            for (const exerciseSet of exercise.sets) {
-              if (exerciseSet.complete && exerciseSet.id !== set.id) {
-                const setDate = new Date(exerciseSet.createdAt)
-                if (!mostRecentDate || setDate > mostRecentDate) {
-                  mostRecentDate = setDate
-                  mostRecentSet = exerciseSet
-                }
+          if (exercise.name === exerciseName && exercise.id !== exerciseId) {
+            // Check if exercise has completed sets
+            const hasCompletedSets = exercise.sets.some((set) => set.complete)
+            if (hasCompletedSets) {
+              const exerciseDate = new Date(exercise.createdAt)
+              if (!mostRecentDate || exerciseDate > mostRecentDate) {
+                mostRecentDate = exerciseDate
+                mostRecentExercise = exercise
               }
             }
           }
@@ -44,20 +44,41 @@ export default function SetV3({
       }
     }
 
-    return mostRecentSet
-  }, [program, exerciseName, set.id])
+    if (!mostRecentExercise) return null
 
-  // Enhanced smart placeholder logic with increment
+    // Get all completed sets, sorted by setNo or creation order
+    const completedSets = mostRecentExercise.sets
+      .filter((set) => set.complete)
+      .sort((a, b) => a.setNo - b.setNo || new Date(a.createdAt) - new Date(b.createdAt))
+
+    return {
+      exercise: mostRecentExercise,
+      completedSets,
+      date: mostRecentDate,
+    }
+  }, [program, exerciseName, exerciseId])
+
+  // Get the corresponding historical set for this current set based on index
+  const correspondingHistoricalSet = useMemo(() => {
+    if (!historicalExerciseData || !historicalExerciseData.completedSets) return null
+
+    // Use the index to find the corresponding set from last time
+    return historicalExerciseData.completedSets[index] || null
+  }, [historicalExerciseData, index])
+
+  // Check if this is a "new set" (no corresponding historical set)
+  const isNewSet = useMemo(() => {
+    return historicalExerciseData && !correspondingHistoricalSet
+  }, [historicalExerciseData, correspondingHistoricalSet])
+
+  // Enhanced smart placeholder logic - only for sets with corresponding historical data
   const getSmartPlaceholder = (field) => {
-    if (mostRecentCompletedSet) {
-      const value = field === "weight" ? mostRecentCompletedSet.weight : mostRecentCompletedSet.reps
+    if (correspondingHistoricalSet) {
+      const value = field === "weight" ? correspondingHistoricalSet.weight : correspondingHistoricalSet.reps
       // For weight, add 2.5kg increment as placeholder suggestion
       return field === "weight" ? value + 2.5 : value
     }
-    if (previousCompletedSet) {
-      const value = field === "weight" ? previousCompletedSet.weight : previousCompletedSet.reps
-      return field === "weight" ? value + 2.5 : value
-    }
+    // No placeholder for new sets
     return ""
   }
 
@@ -83,12 +104,24 @@ export default function SetV3({
       let finalWeight = weight
       let finalReps = reps
 
-      // If no values entered, use placeholders
-      if (!finalWeight) {
-        finalWeight = getSmartPlaceholder("weight").toString()
+      // If no values entered and we have historical data, use placeholders
+      if (!finalWeight && correspondingHistoricalSet) {
+        const placeholder = getSmartPlaceholder("weight")
+        finalWeight = placeholder ? placeholder.toString() : "0"
       }
-      if (!finalReps) {
-        finalReps = getSmartPlaceholder("reps").toString()
+      if (!finalReps && correspondingHistoricalSet) {
+        const placeholder = getSmartPlaceholder("reps")
+        finalReps = placeholder ? placeholder.toString() : "0"
+      }
+
+      // For new sets without historical data, require manual input
+      if (!finalWeight || !finalReps) {
+        if (isNewSet) {
+          // Don't auto-complete new sets without values
+          return
+        }
+        finalWeight = finalWeight || "0"
+        finalReps = finalReps || "0"
       }
 
       // Update local state first
@@ -226,12 +259,12 @@ export default function SetV3({
 
     if (confirmed) {
       baseClass += " bg-green-50 border-green-300"
-    } else if (!hasValue && (mostRecentCompletedSet || previousCompletedSet)) {
-      if (mostRecentCompletedSet) {
-        baseClass += " border-purple-200 bg-purple-50"
-      } else {
-        baseClass += " border-blue-200 bg-blue-50"
-      }
+    } else if (!hasValue && correspondingHistoricalSet) {
+      // Purple styling for sets with historical data
+      baseClass += " border-purple-200 bg-purple-50"
+    } else if (isNewSet) {
+      // Orange styling for new sets
+      baseClass += " border-orange-200 bg-orange-50"
     } else {
       baseClass += " border-gray-300"
     }
@@ -252,6 +285,16 @@ export default function SetV3({
           <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700 border border-green-200 shadow-sm">
             <CheckCircle className="h-3 w-3" />
             <span>Done</span>
+          </div>
+        </div>
+      )}
+
+      {/* New Set indicator */}
+      {isNewSet && !confirmed && (
+        <div className="absolute -top-1 right-2 z-10">
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-700 border border-orange-200 shadow-sm">
+            <Sparkles className="h-3 w-3" />
+            <span>New</span>
           </div>
         </div>
       )}
@@ -324,20 +367,20 @@ export default function SetV3({
             className={`w-8 h-8 rounded-md border transition-all duration-200 touch-manipulation ${
               confirmed
                 ? "bg-green-500 border-green-600 text-white shadow-sm"
-                : (!weight || !reps)
-                  ? mostRecentCompletedSet
-                    ? "bg-purple-100 border-purple-300 hover:bg-purple-200"
-                    : "bg-blue-100 border-blue-300 hover:bg-blue-200"
-                  : "bg-white border-gray-300 hover:bg-gray-100"
+                : (!weight || !reps) && correspondingHistoricalSet
+                  ? "bg-purple-100 border-purple-300 hover:bg-purple-200"
+                  : isNewSet
+                    ? "bg-orange-100 border-orange-300 hover:bg-orange-200"
+                    : "bg-white border-gray-300 hover:bg-gray-100"
             } flex items-center justify-center`}
             title={
               confirmed
                 ? "Set completed - click to undo"
-                : !weight || !reps
-                  ? mostRecentCompletedSet
-                    ? `Complete with suggested values: ${getSmartPlaceholder("weight")}kg × ${getSmartPlaceholder("reps")} reps`
-                    : "Complete with suggested values"
-                  : "Mark as complete"
+                : (!weight || !reps) && correspondingHistoricalSet
+                  ? `Complete with suggested values: ${getSmartPlaceholder("weight")}kg × ${getSmartPlaceholder("reps")} reps`
+                  : isNewSet
+                    ? "New set - enter values to complete"
+                    : "Mark as complete"
             }
           >
             {confirmed && (
